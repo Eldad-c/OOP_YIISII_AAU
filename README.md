@@ -5,7 +5,7 @@ I. Classes and attributes to write in:
 - Executive extends Person: managersList, projectsList, employeesList
 - Project: Id, name, descriptionLink(optional), startDate, endDate, tasksList, status, managerId
 - Task: Id, descriptionLink(optional), assignedUserId, status, dueDate, projectId
-- Report: (?)
+- Report: Id, date (?)
 
 II. Methods:
 - Person: getInfo()
@@ -14,7 +14,7 @@ II. Methods:
 - Executive: getManagersList(), getProjectsList(), getEmployeesList(), generateReport(), getInfo()
 - Project: addTask(), removeTask(), getTasks(), getStatus(), changeStatus()
 - Task: assignUser(), changeStatus(), isOverdue()
-- Report: (?)
+- Report: displayReport(), (?)
 
 III. GUI UX roadmap:
 - Front page: Select role: Employee, Manager, or Executive -> Enter Id, name, and email (should we add password here?) -> If match, continue
