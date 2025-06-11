@@ -4,7 +4,7 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 
-public class ProjectManager extends JPanel {
+public class ProjectManagerGUI extends JPanel {
     private JTextArea projectArea, employeeArea;
     private JLabel project, employee;
     private JComboBox<String> taskDropdown, projectDropdown;
@@ -19,7 +19,7 @@ public class ProjectManager extends JPanel {
         this.backListener = listener;
     }
 
-    public ProjectManager() {
+    public ProjectManagerGUI() {
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);

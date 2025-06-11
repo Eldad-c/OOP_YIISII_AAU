@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class Executive extends JPanel {
+public class ExecutiveGUI extends JPanel {
     private JTextArea overviewArea;
     private JButton updateProjectsBtn, updateEmployeesBtn, generateReportBtn, backBtn;
     private BackListener backListener;
@@ -17,7 +17,7 @@ public class Executive extends JPanel {
         this.backListener = listener;
     }
 
-    public Executive() {
+    public ExecutiveGUI() {
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(15, 15, 15, 15);

@@ -4,7 +4,7 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 
-public class LoginPage extends JPanel {
+public class LoginPageGUI extends JPanel {
     private JLabel signInLabel, usernameLabel, passwordLabel, roleLabel;
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -20,7 +20,7 @@ public class LoginPage extends JPanel {
         this.loginListener = listener;
     }
 
-    public LoginPage() {
+    public LoginPageGUI() {
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
@@ -90,7 +90,7 @@ public class LoginPage extends JPanel {
                 String role = (String) roleComboBox.getSelectedItem();
 
                 if (username.isEmpty() || password.isEmpty() || role.equals("Select Role")) {
-                    JOptionPane.showMessageDialog(LoginPage.this, "Please fill out all fields.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(LoginPageGUI.this, "Please fill out all fields.", "Error", JOptionPane.ERROR_MESSAGE);
                 } else {
                     if (loginListener != null) {
                         loginListener.onLoginSuccess(username, role);

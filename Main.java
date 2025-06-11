@@ -15,10 +15,10 @@ public class Main {
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
-        LoginPage loginPage = new LoginPage();
-        Employee employee = new Employee();
-        ProjectManager manager = new ProjectManager();
-        Executive executive = new Executive();
+        LoginPageGUI loginPage = new LoginPageGUI();
+        EmployeeGUI employee = new EmployeeGUI();
+        ProjectManagerGUI manager = new ProjectManagerGUI();
+        ExecutiveGUI executive = new ExecutiveGUI();
 
         mainPanel.add(loginPage, "Login");
         mainPanel.add(employee, "Employee");
@@ -28,7 +28,7 @@ public class Main {
         frame.add(mainPanel);
 
         // Login success switches views
-        loginPage.setLoginListener(new LoginPage.LoginListener() {
+        loginPage.setLoginListener(new LoginPageGUI.LoginListener() {
             @Override
             public void onLoginSuccess(String username, String role) {
                 switch (role) {
