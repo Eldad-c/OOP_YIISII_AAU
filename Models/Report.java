@@ -18,5 +18,16 @@ public class Report {
     public void displayReport() {
         System.out.println(content);
     }
-   
+    public String getID() {
+        return ID;
+    }
+    public Date getDateGenerated() {
+        return dateGenerated;
+    }
+    public String getContent() {
+        return content;
+    }
+    public String getGeneratedByUserID() {
+        return generatedByUserID;
+    }
 }

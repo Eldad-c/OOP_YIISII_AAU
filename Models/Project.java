@@ -1,10 +1,9 @@
 package Models;
 
+import Database.TaskDatabase;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Project {
-
     private String ID;
     private String name;
     private String descriptionLink;
@@ -12,9 +11,9 @@ public class Project {
     private String endDate;
     private String status;
     private String managerID;
-    private List<String> taskIDs;
+    private ArrayList<String> taskIDs;
 
-    Project(String ID, String name, String descriptionLink, String startDate, String endDate, String status, String managerID, List<String> taskIDs) {
+    public Project(String ID, String name, String descriptionLink, String startDate, String endDate, String status, String managerID) {
         this.ID = ID;
         this.name = name;
         this.descriptionLink = descriptionLink;
@@ -22,7 +21,7 @@ public class Project {
         this.endDate = endDate;
         this.status = status;
         this.managerID = managerID;
-        this.taskIDs = taskIDs != null ? taskIDs : new ArrayList<>();
+        this.taskIDs = new ArrayList<>();
     }
 
     public String getID() {
@@ -68,51 +67,35 @@ public class Project {
     public void setManagerID(String managerID) {
         this.managerID = managerID;
     }
-    public List<String> getTaskIDs() {
-        return new ArrayList<>(taskIDs);
+    public ArrayList<String> getTaskIDs() {
+        return taskIDs;
     }
-    public void setTaskIDs(List<String> taskIDs) {
+    public void setTaskIDs(ArrayList<String> taskIDs) {
         this.taskIDs = taskIDs != null ? taskIDs : new ArrayList<>();
+    }
+    // Adds a new task to this project and persists it in the TaskDatabase
+    public void addTask(Task newTask, TaskDatabase taskDb) {
+        if (newTask == null || newTask.getID() == null || taskIDs.contains(newTask.getID())) return;
+        taskIDs.add(newTask.getID());
+        taskDb.add(newTask);
+    }
+    // Removes a task by its ID from the project and the database
+    public void removeTask(String taskId, TaskDatabase taskDb) {
+        taskIDs.remove(taskId);
+        taskDb.delete(taskId);
+    }
+    // Retrieves all Task objects associated with this specific project
+    public ArrayList<Task> getTasks(TaskDatabase taskDb) {
+        ArrayList<Task> tasks = new ArrayList<>();
+        for (String taskId : taskIDs) {
+            Task t = taskDb.getById(taskId);
+            if (t != null) tasks.add(t);
+        }
+        return tasks;
     }
     public String getInfo() {
         return "Project Name: " + name + ", ID: " + ID + ", Description Link: " + descriptionLink +
                ", Start Date: " + startDate + ", End Date: " + endDate + ", Status: " + status +
                ", Manager ID: " + managerID + ", Number of Tasks: " + taskIDs.size();
-    }
-    
-    void addTask(Task newTask, List<Task> allTasks){
-        if (newTask == null || newTask.getID() == null || taskIDs.contains(newTask.getID())) {
-            return;
-        }
-        taskIDs.add(newTask.getID());
-        if (allTasks != null && !allTasks.contains(newTask)) {
-            allTasks.add(newTask);
-        }
-    }
-
-    void removeTask(String taskID, List<Task> allTasks) {
-        if (taskID == null) {
-            return;
-        }
-        taskIDs.remove(taskID);
-        if (allTasks != null) {
-            allTasks.removeIf(task -> task.getID().equals(taskID) && task.getProjectID().equals(this.ID));
-        }
-    }
-
-    List <Task> getTasks (List<Task> allTasks) {
-        List<Task> projectTasks = new ArrayList<>();
-        if (allTasks == null) {
-            return projectTasks;
-        }
-        for (String taskID : taskIDs) {
-            for (Task task : allTasks) {
-                if (task.getID().equals(taskID) && task.getProjectID().equals(this.ID)) {
-                    projectTasks.add(task);
-                    break;
-                }
-            }
-        }
-        return projectTasks;
     }
 }

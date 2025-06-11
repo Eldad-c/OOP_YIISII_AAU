@@ -1,201 +1,105 @@
 package Models;
 
+import Database.EmployeeDatabase;
+import Database.ProjectDatabase;
+import Database.TaskDatabase;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 public class Manager extends Person {
-    private List<String> managedProjectIDs;
-    private List<String> managedEmployeeIDs;
+    private ArrayList<String> managedProjectIds;
+    private ArrayList<String> managedEmployeeIds;
 
-    public Manager(List<String> managedProjectIDs, List<String> managedEmployeeIDs,
-                   String name, String ID, String email, String password) {
+    public Manager(String name, String ID, String email, String password) {
         super(name, ID, email, password);
-        this.managedProjectIDs = managedProjectIDs != null ? managedProjectIDs : new ArrayList<>();
-        this.managedEmployeeIDs = managedEmployeeIDs != null ? managedEmployeeIDs : new ArrayList<>();
+        this.managedProjectIds = new ArrayList<>();
+        this.managedEmployeeIds = new ArrayList<>();
     }
 
-    public List<String> getManagedProjectIDs() {
-        return new ArrayList<>(managedProjectIDs);
+    public ArrayList<String> getManagedProjectIds() {
+        return managedProjectIds;
     }
-
-    public List<String> getManagedEmployeeIDs() {
-        return new ArrayList<>(managedEmployeeIDs);
+    public ArrayList<String> getManagedEmployeeIds() {
+        return managedEmployeeIds;
     }
-
-    public void addManagedProjectID(String projectId) {
-        if (projectId != null && !managedProjectIDs.contains(projectId)) {
-            managedProjectIDs.add(projectId);
+    public void addManagedProjectId(String projectId) {
+        if (projectId != null && !managedProjectIds.contains(projectId)) {
+            managedProjectIds.add(projectId);
         }
     }
-
-    public void removeManagedProjectID(String projectId) {
-        managedProjectIDs.remove(projectId);
+    public void removeManagedProjectId(String projectId) {
+        managedProjectIds.remove(projectId);
     }
-
-    public void addManagedEmployeeID(String employeeId) {
-        if (employeeId != null && !managedEmployeeIDs.contains(employeeId)) {
-            managedEmployeeIDs.add(employeeId);
+    public void addManagedEmployeeId(String employeeId) {
+        if (employeeId != null && !managedEmployeeIds.contains(employeeId)) {
+            managedEmployeeIds.add(employeeId);
         }
     }
-
-    public void removeManagedEmployeeID(String employeeId) {
-        managedEmployeeIDs.remove(employeeId);
+    public void removeManagedEmployeeId(String employeeId) {
+        managedEmployeeIds.remove(employeeId);
     }
-
     @Override
     public String getInfo() {
-        return "Manager Name: " + getName() +
-               ", ID: " + getID() +
-               ", Email: " + getEmail() +
-               ", Managed Projects: " + managedProjectIDs.size() +
-               ", Managed Employees: " + managedEmployeeIDs.size();
+        return "Manager Name: " + getName() + ", ID: " + getID() + ", Email: " + getEmail() +
+               ", Managed Projects: " + managedProjectIds.size() + ", Managed Employees: " + managedEmployeeIds.size();
     }
-
-    public List<Employee> getManagedEmployees(List<Employee> allEmployees) {
-        List<Employee> managedEmployees = new ArrayList<>();
-        if (allEmployees == null) {
-            return managedEmployees;
+    // Retrieves actual Employee objects directly managed by this manager
+    public ArrayList<Employee> getManagedEmployees(EmployeeDatabase empDb) {
+        ArrayList<Employee> managed = new ArrayList<>();
+        for (String empId : managedEmployeeIds) {
+            Employee e = empDb.getById(empId);
+            if (e != null) managed.add(e);
         }
-        for (String empId : managedEmployeeIDs) {
-            for (Employee employee : allEmployees) {
-                if (employee.getID().equals(empId) && this.getID().equals(employee.getManagerID())) {
-                    managedEmployees.add(employee);
-                    break;
+        return managed;
+    }
+    // Gathers tasks related to projects they manage
+    public ArrayList<Task> getTasksForManagedProjects(ProjectDatabase projectDb, TaskDatabase taskDb) {
+        ArrayList<Task> tasks = new ArrayList<>();
+        for (String projId : managedProjectIds) {
+            Project p = projectDb.getById(projId);
+            if (p != null) {
+                for (String taskId : p.getTaskIDs()) {
+                    Task t = taskDb.getById(taskId);
+                    if (t != null) tasks.add(t);
                 }
             }
         }
-        return managedEmployees;
+        return tasks;
     }
-
-    public List<Task> getTasksForManagedProjects(List<Project> allProjects, List<Task> allTasks) {
-        List<Task> tasksInManagedProjects = new ArrayList<>();
-        if (allProjects == null || allTasks == null) {
-            return tasksInManagedProjects;
+    // Provides status summaries for projects this manager oversees
+    public ArrayList<String> getProjectStatuses(ProjectDatabase projectDb) {
+        ArrayList<String> statuses = new ArrayList<>();
+        for (String projId : managedProjectIds) {
+            Project p = projectDb.getById(projId);
+            if (p != null) statuses.add(p.getStatus());
         }
-
-        List<Project> actualManagedProjects = new ArrayList<>();
-        for (String projId : managedProjectIDs) {
-            for (Project project : allProjects) {
-                if (project.getID().equals(projId)) {
-                    actualManagedProjects.add(project);
-                    break;
-                }
-            }
-        }
-
-        for (Project managedProject : actualManagedProjects) {
-            for (Task task : allTasks) {
-                if (task.getProjectID().equals(managedProject.getID())) {
-                    tasksInManagedProjects.add(task);
-                }
-            }
-        }
-        return tasksInManagedProjects;
+        return statuses;
     }
-
-    public Map<String, String> getProjectStatuses(List<Project> allProjects) {
-        Map<String, String> projectStatuses = new HashMap<>();
-        if (allProjects == null) {
-            return projectStatuses;
-        }
-        for (String projId : managedProjectIDs) {
-            for (Project project : allProjects) {
-                if (project.getID().equals(projId)) {
-                    projectStatuses.put(project.getID(), project.getStatus());
-                    break;
-                }
-            }
-        }
-        return projectStatuses;
-    }
-
-    public void updateTaskStatus(String taskId, String newStatus, List<Task> allTasks, List<Project> allProjects) {
-        if (allTasks == null || allProjects == null) {
-            System.out.println("Error: Global task or project list is unavailable.");
-            return;
-        }
-
-        boolean isTaskInManagedProject = false;
-        String taskProjectID = null;
-
-        Task targetTask = null;
-        for (Task task : allTasks) {
-            if (task.getID().equals(taskId)) {
-                targetTask = task;
-                taskProjectID = task.getProjectID();
+    // Enables managers to update the status of tasks within their managed projects
+    public void updateTaskStatus(String taskId, String newStatus, TaskDatabase taskDb) {
+        for (Task t : getTasksForManagedProjects(null, taskDb)) {
+            if (t.getID().equals(taskId)) {
+                t.changeStatus(newStatus);
                 break;
             }
         }
-
-        if (targetTask == null) {
-            System.out.println("Error: Task with ID " + taskId + " not found.");
-            return;
-        }
-
-        for (String managedProjId : managedProjectIDs) {
-            if (managedProjId.equals(taskProjectID)) {
-                isTaskInManagedProject = true;
-                break;
-            }
-        }
-
-        if (!isTaskInManagedProject) {
-            System.out.println("Error: Task " + taskId + " does not belong to a project managed by this manager.");
-            return;
-        }
-
-        targetTask.changeStatus(newStatus);
-        System.out.println("Task " + taskId + " status updated to: " + newStatus);
     }
-
-    public void updateProjectStatus(String projectId, String newStatus, List<Project> allProjects) {
-        if (allProjects == null || !managedProjectIDs.contains(projectId)) {
-            System.out.println("Error: Project " + projectId + " is not managed by this manager or global project list is unavailable.");
-            return;
-        }
-
-        for (Project project : allProjects) {
-            if (project.getID().equals(projectId)) {
-                project.changeStatus(newStatus);
-                System.out.println("Project " + projectId + " status updated to: " + newStatus);
-                return;
-            }
-        }
-        System.out.println("Error: Project " + projectId + " not found in the global list.");
-    }
-
-    public void addProject(Project newProject, List<Project> allProjects) {
-        if (newProject == null) {
-            System.out.println("Error: Cannot add a null project.");
-            return;
-        }
-
-        if (!managedProjectIDs.contains(newProject.getID())) {
-            managedProjectIDs.add(newProject.getID());
-        }
-
-        if (allProjects != null && !allProjects.contains(newProject)) {
-            allProjects.add(newProject);
-            System.out.println("Project '" + newProject.getName() + "' (ID: " + newProject.getID() + ") added to manager's list and overall organization.");
-        } else {
-            System.out.println("Project '" + newProject.getName() + "' (ID: " + newProject.getID() + ") already exists in the organization or global list is null.");
+    // Allows managers to change the status of projects they manage
+    public void updateProjectStatus(String projectId, String newStatus, ProjectDatabase projectDb) {
+        if (managedProjectIds.contains(projectId)) {
+            Project p = projectDb.getById(projectId);
+            if (p != null) p.changeStatus(newStatus);
         }
     }
-
-    public void removeProject(String projectId, List<Project> allProjects) {
-        boolean removedFromManaged = managedProjectIDs.remove(projectId);
-
-        boolean removedFromGlobal = false;
-        if (allProjects != null) {
-            removedFromGlobal = allProjects.removeIf(p -> p.getID().equals(projectId));
+    // Allows the manager to add a new project
+    public void addProject(Project newProject, ProjectDatabase projectDb) {
+        if (newProject != null && !managedProjectIds.contains(newProject.getID())) {
+            managedProjectIds.add(newProject.getID());
+            projectDb.add(newProject);
         }
-
-        if (removedFromManaged || removedFromGlobal) {
-            System.out.println("Project with ID " + projectId + " successfully removed.");
-        } else {
-            System.out.println("Failed to remove project with ID " + projectId + ". Project not found in managed list or global list.");
-        }
+    }
+    // Allows the manager to remove a project
+    public void removeProject(String projectId, ProjectDatabase projectDb) {
+        managedProjectIds.remove(projectId);
+        projectDb.delete(projectId);
     }
 }

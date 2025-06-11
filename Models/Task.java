@@ -19,12 +19,18 @@ public class Task {
         this.projectID = projectID; 
     }
 
-    void assignUser (String userID){
-        this.assignedUserID = userID;
+    // Assigns an employee (by ID) to this task
+    public void assignUser(String userId) {
+        this.assignedUserID = userId;
     }
-
-    void changeStatus (String status){
-        this.status = status;
+    // Updates the task's status
+    public void changeStatus(String newStatus) {
+        this.status = newStatus;
+    }
+    // Determines if the task's dueDate has passed
+    public boolean isOverdue() {
+        if (dueDate == null) return false;
+        return dueDate.before(new java.util.Date());
     }
 
     public String getID() {
@@ -63,10 +69,5 @@ public class Task {
     }
     public void setProjectID(String projectID) {
         this.projectID = projectID;
-    }
-    
-    boolean isOverdue() {
-        Date currentDate = new Date();
-        return dueDate.before(currentDate);
     }
 }
