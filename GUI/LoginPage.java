@@ -2,6 +2,7 @@ package GUI;
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+//sample commit
 
 public class LoginPage {
     private JLabel signInLabel, usernameLabel, passwordLabel;
