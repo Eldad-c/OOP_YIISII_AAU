@@ -38,7 +38,7 @@ public class Employee extends JPanel {
         // Task Area inside ScrollPane
         taskArea = new JTextArea(8, 50);
         taskArea.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-        taskArea.setEditable(false);
+        taskArea.setEditable(true);
         JScrollPane taskScrollPane = new JScrollPane(taskArea);
         gbc.gridy = 1;
         add(taskScrollPane, gbc);
