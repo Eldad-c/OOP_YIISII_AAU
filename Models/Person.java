@@ -1,13 +1,15 @@
 package Models;
-public class Person {
+abstract class Person {
     private String name;
     private String ID;
     private String email;
+    private String password;
 
-    Person(String name, String ID, String email) {
+    Person(String name, String ID, String email, String password) {
         this.name = name;
         this.ID = ID;
         this.email = email;
+        this.password = password; 
     }
 
     public String getName() {
@@ -29,5 +31,5 @@ public class Person {
     public void setEmail(String email) {
         this.email = email;
     }
-    
+   abstract public String getinfo();
 }

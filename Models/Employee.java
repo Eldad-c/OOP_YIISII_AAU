@@ -3,8 +3,8 @@ class Employee extends Person {
     private String managerID;
     private String projectID;
     private String EmployeeID;
-    Employee(String managerID, String projectID, String EmployeeID, String name, String ID, String email) {
-        super(name, ID, email);
+    Employee(String managerID, String projectID, String EmployeeID, String name, String ID, String email, String password) {
+        super(name, ID, email, password);
         this.managerID = managerID; 
         this.projectID = projectID;
         this.EmployeeID = EmployeeID;
@@ -29,6 +29,12 @@ class Employee extends Person {
     }
     public void setEmployeeID(String employeeID) {
         EmployeeID = employeeID;
+    }
+
+    @Override
+    public String getinfo() {
+        return "Employee Name: " + getName() + ", ID: " + getID() + ", Email: " + getEmail() +
+               ", Manager ID: " + managerID + ", Project ID: " + projectID + ", Employee ID: " + EmployeeID;
     }
 } 
 

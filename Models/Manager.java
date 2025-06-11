@@ -1,27 +1,40 @@
 package Models;
 public class Manager extends Person {
-    private String projectID;
-    private String employeeID;
+    private String managedProjectID;
+    private String managedEmployeeID;
 
-    public Manager(String projectID, String employeeID, String name, String ID, String email) {
-        super(name, ID, email);
-        this.projectID = projectID;
-        this.employeeID = employeeID;
+    public Manager(String managedProjectID, String managedEmployeeID, String name, String ID, String email, String password) {
+        super(name, ID, email, password);
+        this.managedProjectID = managedProjectID;
+        this.managedEmployeeID = managedEmployeeID;
         
         
 
     }
-    public String getProjectID() {
-        return projectID;
+   @Override 
+    public String getinfo() {
+        return "Manager Name: " + getName() + ", ID: " + getID() + ", Email: " + getEmail() +
+               ", Managed Project ID: " + managedProjectID + ", Managed Employee ID: " + managedEmployeeID;
     }
-    public void setProjectID(String projectID) {
-        this.projectID = projectID;
-    }
-    public String getEmployeeID() {
-        return employeeID;
-    }   
-    public void setEmployeeID(String employeeID) {
-        this.employeeID = employeeID;
-    }   
+    
 
+    // public String getProjectID() {
+    //     return projectID;
+    // }
+    // public void setProjectID(String projectID) {
+    //     this.projectID = projectID;
+    // }
+    // public String getEmployeeID() {
+    //     return employeeID;
+    // }   
+    // public void setEmployeeID(String employeeID) {
+    //     this.employeeID = employeeID;
+    // }   
+    // public String getEmployees(){
+    //     return "Employee ID: " + employeeID;
+    // }
+    // public String getProjects(){
+    //     return "Project ID: " + projectID;
+    // }
+    
 }
