@@ -1,4 +1,3 @@
-
 package Interfaces;
 
 import java.util.List;
@@ -14,3 +13,4 @@ public interface Employee {
     // Button action methods
     void onUpdateTaskStatusButtonClick(String taskId, String newStatus); // Action for updating task status
 }
+

@@ -1,112 +1,105 @@
 package Interfaces;
-import Models.Employee; // Import the Employee class
+//import Models.*; // Import the Employee class
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
-//sample commit
 
-public class LoginPage {
-    private JLabel signInLabel, usernameLabel, passwordLabel;
+public class LoginPage extends JPanel {
+    private JLabel signInLabel, usernameLabel, passwordLabel, roleLabel;
     private JTextField usernameField;
     private JPasswordField passwordField;
-    private JButton loginButton, registerButton;
     private JComboBox<String> roleComboBox;
-    
+    private JButton loginButton;
+    private LoginListener loginListener;
+
+    public interface LoginListener {
+        void onLoginSuccess(String username, String role);
+    }
+
+    public void setLoginListener(LoginListener listener) {
+        this.loginListener = listener;
+    }
+
     public LoginPage() {
-        JFrame frame = new JFrame("PMS - Login");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 600);
-        frame.setLayout(new GridBagLayout());
+        setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.anchor = GridBagConstraints.WEST;
 
+        // Title
         signInLabel = new JLabel("Sign in to PMS");
         signInLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        signInLabel.setHorizontalAlignment(SwingConstants.CENTER);
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
-        frame.add(signInLabel, gbc);
+        add(signInLabel, gbc);
+
+        gbc.anchor = GridBagConstraints.WEST; // reset for inputs
+        gbc.gridwidth = 1;
 
         // Username
-        JPanel usernamePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        usernameLabel = new JLabel("Username");
-        usernameField = new JTextField(20);
-        usernamePanel.add(usernameLabel);
-        usernamePanel.add(usernameField);
+        usernameLabel = new JLabel("Username:");
         gbc.gridx = 0;
-        gbc.gridy = 2;
-        frame.add(usernamePanel, gbc);
+        gbc.gridy = 1;
+        add(usernameLabel, gbc);
+
+        usernameField = new JTextField(20);
+        gbc.gridx = 1;
+        add(usernameField, gbc);
 
         // Password
-        JPanel passwordPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        passwordLabel = new JLabel("Password");
+        passwordLabel = new JLabel("Password:");
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        add(passwordLabel, gbc);
+
         passwordField = new JPasswordField(20);
-        passwordPanel.add(passwordLabel);
-        passwordPanel.add(passwordField);
+        gbc.gridx = 1;
+        add(passwordField, gbc);
+
+        // Role
+        roleLabel = new JLabel("Role:");
         gbc.gridx = 0;
         gbc.gridy = 3;
-        frame.add(passwordPanel, gbc);
+        add(roleLabel, gbc);
 
-        // Roles
-        JPanel rolePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        JLabel roleLabel = new JLabel("Role");
         String[] roles = {"Select Role", "Employee", "Manager", "Executive"};
         roleComboBox = new JComboBox<>(roles);
-        rolePanel.add(roleLabel);
-        rolePanel.add(roleComboBox);
+        gbc.gridx = 1;
+        add(roleComboBox, gbc);
+
+        // Login button
+        loginButton = new JButton("Login");
+        loginButton.setPreferredSize(new Dimension(120, 30));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.add(loginButton);
+
         gbc.gridx = 0;
         gbc.gridy = 4;
-        frame.add(rolePanel, gbc);
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        add(buttonPanel, gbc);
 
-        // Buttons
-      loginButton = new JButton("Login");
+        // Action listener
         loginButton.addActionListener(new ActionListener() {
             @Override
-             public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 String username = usernameField.getText();
                 String password = new String(passwordField.getPassword());
                 String role = (String) roleComboBox.getSelectedItem();
 
-                // Simple validation
                 if (username.isEmpty() || password.isEmpty() || role.equals("Select Role")) {
-                    JOptionPane.showMessageDialog(frame, "Please fill out all fields.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(LoginPage.this, "Please fill out all fields.", "Error", JOptionPane.ERROR_MESSAGE);
                 } else {
-                    JOptionPane.showMessageDialog(frame, "Logged in as: " + username + " (" + role + ")");
+                    if (loginListener != null) {
+                        loginListener.onLoginSuccess(username, role);
+                    }
+
                 }
             }
         });
-        gbc.gridx = 0;
-        gbc.gridy = 5;
-        gbc.gridwidth = 1;
-        frame.add(loginButton, gbc);
 
-        registerButton = new JButton("Register");
-        registerButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Registration logic (placeholder)
-                JOptionPane.showMessageDialog(frame, "Registration functionality not implemented.", "Info", JOptionPane.INFORMATION_MESSAGE);
-            }
-        });
-        gbc.gridx = 1;
-        gbc.gridy = 5;
-        frame.add(registerButton, gbc);
-
-        frame.setVisible(true);
     }
 
-    public static void main(String[] args) {
-        LoginPage loginPage = new LoginPage();
-    }
-
-    private String getSelectedRole() {
-        String selectedRole = (String) roleComboBox.getSelectedItem();
-        if (selectedRole != null && !selectedRole.equals("Select Role")) {
-            return selectedRole;
-        }
-        return null;
-    }
 }
