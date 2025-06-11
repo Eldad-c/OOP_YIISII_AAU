@@ -1,4 +1,8 @@
 package Models;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class Project {
 
     private String ID;
@@ -8,8 +12,9 @@ public class Project {
     private String endDate;
     private String status;
     private String managerID;
-    private String taskIDs;
-    Project(String ID, String name, String descriptionLink, String startDate, String endDate, String status, String managerID, String taskIDs) {
+    private List<String> taskIDs;
+
+    Project(String ID, String name, String descriptionLink, String startDate, String endDate, String status, String managerID, List<String> taskIDs) {
         this.ID = ID;
         this.name = name;
         this.descriptionLink = descriptionLink;
@@ -17,9 +22,9 @@ public class Project {
         this.endDate = endDate;
         this.status = status;
         this.managerID = managerID;
-        this.taskIDs = taskIDs; 
-
+        this.taskIDs = taskIDs != null ? taskIDs : new ArrayList<>();
     }
+
     public String getID() {
         return ID;
     }
@@ -54,7 +59,7 @@ public class Project {
     public String getStatus() {
         return status;
     }
-    public void setStatus(String status) {
+    public void changeStatus(String status) {
         this.status = status;
     }
     public String getManagerID() {
@@ -63,43 +68,51 @@ public class Project {
     public void setManagerID(String managerID) {
         this.managerID = managerID;
     }
-    public String getTaskIDs() {
-        return taskIDs;
+    public List<String> getTaskIDs() {
+        return new ArrayList<>(taskIDs);
     }
-    public void setTaskIDs(String taskIDs) {
-        this.taskIDs = taskIDs;
+    public void setTaskIDs(List<String> taskIDs) {
+        this.taskIDs = taskIDs != null ? taskIDs : new ArrayList<>();
     }
     public String getInfo() {
         return "Project Name: " + name + ", ID: " + ID + ", Description Link: " + descriptionLink +
                ", Start Date: " + startDate + ", End Date: " + endDate + ", Status: " + status +
-               ", Manager ID: " + managerID + ", Task IDs: " + taskIDs;
+               ", Manager ID: " + managerID + ", Number of Tasks: " + taskIDs.size();
     }
-   
-    // void addTask( Task newTask, TaskDatabase taskDb){
-    //     taskDb.addTask(newTask);
-    //     this.taskIDs += "," + newTask.getID();
-    // }
+    
+    void addTask(Task newTask, List<Task> allTasks){
+        if (newTask == null || newTask.getID() == null || taskIDs.contains(newTask.getID())) {
+            return;
+        }
+        taskIDs.add(newTask.getID());
+        if (allTasks != null && !allTasks.contains(newTask)) {
+            allTasks.add(newTask);
+        }
+    }
 
-    // void removeTask(String taskID, TaskDatabase taskDb) {
-    //     taskDb.removeTask(taskID);
-    //     this.taskIDs = this.taskIDs.replace("," + taskID, "").replace(taskID + ",", "").replace(taskID, "");
-    // }
-    // String getStatus(){
-    //     return status;
-    // }
-    // void changeStatus(String newStatus){
-    //     this.status = newStatus;
+    void removeTask(String taskID, List<Task> allTasks) {
+        if (taskID == null) {
+            return;
+        }
+        taskIDs.remove(taskID);
+        if (allTasks != null) {
+            allTasks.removeIf(task -> task.getID().equals(taskID) && task.getProjectID().equals(this.ID));
+        }
+    }
 
-    // }
-    // List <Task> getTasks (TaskDatabase taskDb) {
-    //     List<Task> tasks = new ArrayList<>();
-    //     String[] taskIDsArray = this.taskIDs.split(",");
-    //     for (String taskID : taskIDsArray) {
-    //         Task task = taskDb.getTaskByID(taskID);
-    //         if (task != null) {
-    //             tasks.add(task);
-    //         }
-    //     }
-    //     return tasks;
-    // }
+    List <Task> getTasks (List<Task> allTasks) {
+        List<Task> projectTasks = new ArrayList<>();
+        if (allTasks == null) {
+            return projectTasks;
+        }
+        for (String taskID : taskIDs) {
+            for (Task task : allTasks) {
+                if (task.getID().equals(taskID) && task.getProjectID().equals(this.ID)) {
+                    projectTasks.add(task);
+                    break;
+                }
+            }
+        }
+        return projectTasks;
+    }
 }

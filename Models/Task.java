@@ -1,5 +1,7 @@
 package Models;
+
 import java.util.Date;
+
 public class Task {
     String ID;
     String descriptionLink;
@@ -7,6 +9,7 @@ public class Task {
     String status;
     Date dueDate;
     String projectID;
+
     Task (String ID, String descriptionLink, String assignedUserID, String status, Date dueDate, String projectID) {
         this.ID = ID;
         this.descriptionLink = descriptionLink;
@@ -15,12 +18,15 @@ public class Task {
         this.dueDate = dueDate;
         this.projectID = projectID; 
     }
+
     void assignUser (String userID){
-    
+        this.assignedUserID = userID;
     }
+
     void changeStatus (String status){
         this.status = status;
     }
+
     public String getID() {
         return ID;
     }
@@ -63,5 +69,4 @@ public class Task {
         Date currentDate = new Date();
         return dueDate.before(currentDate);
     }
-
 }

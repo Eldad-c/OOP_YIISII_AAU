@@ -1,4 +1,5 @@
 package Models;
+
 public abstract class Person {
     private String name;
     private String ID;
@@ -31,5 +32,15 @@ public abstract class Person {
     public void setEmail(String email) {
         this.email = email;
     }
-   abstract public String getInfo();
+    abstract public String getInfo();
+     public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }
+
+   
+
