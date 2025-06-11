@@ -10,12 +10,13 @@ public abstract class Person {
         this.name = name;
         this.ID = ID;
         this.email = email;
-        this.password = password; 
+        this.password = password;
     }
 
     public String getName() {
         return name;
-    }   
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -23,17 +24,22 @@ public abstract class Person {
     public String getID() {
         return ID;
     }
+
     public void setID(String ID) {
         this.ID = ID;
     }
+
     public String getEmail() {
         return email;
     }
+
     public void setEmail(String email) {
         this.email = email;
     }
+
     abstract public String getInfo();
-     public String getPassword() {
+
+    public String getPassword() {
         return password;
     }
 
@@ -41,6 +47,3 @@ public abstract class Person {
         this.password = password;
     }
 }
-
-   
-
