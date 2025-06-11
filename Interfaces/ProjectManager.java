@@ -1,88 +1,85 @@
 package Interfaces;
+
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
-public class ProjectManager {
+
+public class ProjectManager extends JPanel {
     private JTextArea projectArea, employeeArea;
     private JLabel project, employee;
-    private JFrame pmFrame;
-    private JButton taskUpdate, newTask, projectUpdate, taskAssign;
+    private JComboBox<String> taskDropdown, projectDropdown;
 
-    public ProjectManager () {
-        pmFrame = new JFrame("Welcome {Project Manager Name}");
-        pmFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        pmFrame.setSize(900, 600);
-        pmFrame.setLayout(new GridBagLayout());
+    public ProjectManager() {
+        setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 2;
-        gbc.weighty = 3;
 
-        //Current Projects Label
+        // Current Projects Label
         project = new JLabel("Current Projects:");
-        project.setFont(new Font("Arial", Font.BOLD, 18));
+        project.setFont(new Font("Arial", Font.BOLD, 14));
+        gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.WEST;
-        pmFrame.add(project, gbc);
+        add(project, gbc);
 
-        //Projects Text Area
-        projectArea = new JTextArea(10, 40);
+        // Projects Text Area
+        projectArea = new JTextArea(5, 40);
         projectArea.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         gbc.gridy = 1;
-        pmFrame.add(projectArea, gbc);
-        
-        //Current Employees Label
-        employee = new JLabel("Current Employees:");
-        employee.setFont(new Font("Arial", Font.BOLD, 18));
+        add(projectArea, gbc);
+
+        // Task Dropdown
+        String[] taskOptions = {"Update Task Status", "Add New Task", "Assign Task"};
+        taskDropdown = new JComboBox<>(taskOptions);
         gbc.gridy = 2;
-        gbc.anchor = GridBagConstraints.WEST;
-        pmFrame.add(employee, gbc);
-
-        //Current Employees Area
-        employeeArea = new JTextArea(10, 40);
-        employeeArea.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-        gbc.gridy = 3;
-        pmFrame.add(employeeArea, gbc);
-
-        //Buttons Row 1
-        gbc.gridy = 4;
         gbc.gridwidth = 1;
-
-        taskUpdate = new JButton("Update Task Status");
         gbc.gridx = 0;
-        pmFrame.add(taskUpdate, gbc);
+        gbc.anchor = GridBagConstraints.CENTER;
+        add(taskDropdown, gbc);
 
-        projectUpdate = new JButton("Update Project Status");
-        gbc.gridx = 1;
-        pmFrame.add(projectUpdate, gbc);
+        // Current Employees Label
+        employee = new JLabel("Current Employees:");
+        employee.setFont(new Font("Arial", Font.BOLD, 14));
+        gbc.gridy = 3;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        add(employee, gbc);
 
+        // Employees Text Area
+        employeeArea = new JTextArea(5, 40);
+        employeeArea.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        gbc.gridy = 4;
+        add(employeeArea, gbc);
 
-        //Buttons Row 2
+        // Project Dropdown
+        String[] projectOptions = {"Add New Project", "Update Project Status", "Remove Project"};
+        projectDropdown = new JComboBox<>(projectOptions);
         gbc.gridy = 5;
-
-        newTask = new JButton("Add New Task");
+        gbc.gridwidth = 1;
         gbc.gridx = 0;
-        pmFrame.add(newTask, gbc);
+        gbc.anchor = GridBagConstraints.CENTER;
+        add(projectDropdown, gbc);
 
-        taskAssign = new JButton("Assign Task");
-        gbc.gridx = 1;
-        pmFrame.add(taskAssign, gbc);
+        // Add event handling
+        taskDropdown.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String selectedTask = (String) taskDropdown.getSelectedItem();
+                System.out.println("Task Action Selected: " + selectedTask);
+                // Add specific method calls here if needed
+            }
+        });
 
-
-
-        pmFrame.setVisible(true);
-        
-
-
-
-
-
+        projectDropdown.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String selectedProject = (String) projectDropdown.getSelectedItem();
+                System.out.println("Project Action Selected: " + selectedProject);
+                // Add specific method calls here if needed
+            }
+        });
     }
-
-    public static void main(String[] args) {
-        new ProjectManager();
-    }
-
 }
