@@ -1,5 +1,9 @@
 # Project Management System
 
+This document outlines the core classes, methods, data management layer, and GUI roadmap for the Project Management System.
+
+---
+
 ## I. Core Classes and Attributes
 
 ### Person (Abstract Base Class)
@@ -77,6 +81,8 @@
 * `Map<String, String> getProjectStatuses(ProjectDatabase projectDb)`: Provides status summaries for projects this manager oversees.
 * `void updateTaskStatus(String taskId, String newStatus, TaskDatabase taskDb)`: Enables managers to update the status of tasks within their managed projects. (Status is now String)
 * `void updateProjectStatus(String projectId, String newStatus, ProjectDatabase projectDb)`: Allows managers to change the status of projects they manage. (Status is now String)
+* `void addProject(Project newProject, ProjectDatabase projectDb)`: Allows the manager to add a new project to their managed list and the database.
+* `void removeProject(String projectId, ProjectDatabase projectDb)`: Allows the manager to remove a project from their managed list and the database.
 
 ### Executive
 
@@ -86,6 +92,9 @@
 * `List<Employee> getAllEmployees(EmployeeDatabase empDb)`: Retrieves all employee objects in the organization.
 * `Report generateReport(String reportType, AnyDatabase... dbs)`: Creates various reports (e.g., project progress, employee workload) by querying relevant "Database" classes.
 * `void viewSystemOverview()`: Provides a high-level summary of organizational metrics.
+* `void deleteAccount(String userId, PersonDatabase personDb)`: Allows the executive to delete any user account from the system (Employee, Manager, Executive).
+* `void addProjectToOrganization(Project newProject, ProjectDatabase projectDb)`: Allows the executive to add a new project to the overall organization's list of projects.
+* `void removeProjectFromOrganization(String projectId, ProjectDatabase projectDb)`: Allows the executive to remove a project from the overall organization's list of projects.
 
 ### Project
 
@@ -115,6 +124,8 @@ To enable efficient retrieval and management of objects (e.g., getting an Employ
 * `ManagerDatabase`: Manages the collection of all Manager objects.
 * `ProjectDatabase`: Manages the collection of all Project objects.
 * `TaskDatabase`: Manages the collection of all Task objects.
+* `ExecutiveDatabase`: Manages the collection of all Executive objects.
+* `PersonDatabase`: Manages the collection of all Person objects (or potentially coordinates across Employee, Manager, Executive databases for overall user management).
 
 These "database" classes would typically offer methods like `getById(String id)`, `add(Object obj)`, `update(Object obj)`, `delete(String id)`, and `getAll()`.
 
@@ -141,6 +152,8 @@ This section outlines the planned user interaction flow and the display for each
     * Buttons/Inputs to "Update Project Status" (requires `projectId`, `newStatus` string).
     * Option to "Assign Task" to an employee under their management.
     * Option to "Add New Task" to a project they manage.
+    * Option to "Add New Project" (requires project details).
+    * Option to "Remove Project" (requires `projectId`).
 
 ### If Employee Dashboard:
 
@@ -161,3 +174,6 @@ This section outlines the planned user interaction flow and the display for each
         * All Employees in the organization.
 * **Actions**:
     * Button to "Generate Report" (potentially offering different report types).
+    * Button/Input to "Delete Account" (requires `userId`, likely with confirmation).
+    * Button/Input to "Add New Project to Organization" (requires project details).
+    * Button/Input to "Remove Project from Organization" (requires `projectId`).
