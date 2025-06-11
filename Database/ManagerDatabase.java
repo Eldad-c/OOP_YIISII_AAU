@@ -26,7 +26,8 @@ public class ManagerDatabase {
     }
 
     public void update(Manager manager) {
-        if (manager == null) return;
+        if (manager == null)
+            return;
         for (int i = 0; i < managerList.size(); i++) {
             if (managerList.get(i).getID().equals(manager.getID())) {
                 managerList.set(i, manager);

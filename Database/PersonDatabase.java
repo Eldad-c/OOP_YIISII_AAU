@@ -26,7 +26,8 @@ public class PersonDatabase {
     }
 
     public void update(Person person) {
-        if (person == null) return;
+        if (person == null)
+            return;
         for (int i = 0; i < personList.size(); i++) {
             if (personList.get(i).getID().equals(person.getID())) {
                 personList.set(i, person);

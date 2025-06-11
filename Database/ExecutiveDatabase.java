@@ -26,7 +26,8 @@ public class ExecutiveDatabase {
     }
 
     public void update(Executive executive) {
-        if (executive == null) return;
+        if (executive == null)
+            return;
         for (int i = 0; i < executiveList.size(); i++) {
             if (executiveList.get(i).getID().equals(executive.getID())) {
                 executiveList.set(i, executive);

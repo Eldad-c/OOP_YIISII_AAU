@@ -26,7 +26,8 @@ public class TaskDatabase {
     }
 
     public void update(Task task) {
-        if (task == null) return;
+        if (task == null)
+            return;
         for (int i = 0; i < taskList.size(); i++) {
             if (taskList.get(i).getID().equals(task.getID())) {
                 taskList.set(i, task);

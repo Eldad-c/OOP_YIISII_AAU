@@ -26,7 +26,8 @@ public class EmployeeDatabase {
     }
 
     public void update(Employee employee) {
-        if (employee == null) return;
+        if (employee == null)
+            return;
         for (int i = 0; i < employeeList.size(); i++) {
             if (employeeList.get(i).getID().equals(employee.getID())) {
                 employeeList.set(i, employee);

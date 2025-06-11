@@ -38,12 +38,14 @@ public class Employee extends Person {
         this.projectIds = projectIds;
     }
 
-    // Retrieves actual Task objects assigned to this employee by consulting a TaskDatabase
+    // Retrieves actual Task objects assigned to this employee by consulting a
+    // TaskDatabase
     public ArrayList<Models.Task> getAssignedTasks(Database.TaskDatabase taskDb) {
         ArrayList<Models.Task> tasks = new ArrayList<>();
         for (String taskId : assignedTaskIds) {
             Models.Task t = taskDb.getById(taskId);
-            if (t != null) tasks.add(t);
+            if (t != null)
+                tasks.add(t);
         }
         return tasks;
     }
@@ -53,7 +55,8 @@ public class Employee extends Person {
         ArrayList<String> statuses = new ArrayList<>();
         for (String projectId : projectIds) {
             Models.Project p = projectDb.getById(projectId);
-            if (p != null) statuses.add(p.getStatus());
+            if (p != null)
+                statuses.add(p.getStatus());
         }
         return statuses;
     }
@@ -62,34 +65,15 @@ public class Employee extends Person {
     public void updateTaskStatus(String taskId, String newStatus, Database.TaskDatabase taskDb) {
         if (assignedTaskIds.contains(taskId)) {
             Models.Task t = taskDb.getById(taskId);
-            if (t != null) t.changeStatus(newStatus);
+            if (t != null)
+                t.changeStatus(newStatus);
         }
     }
 
     @Override
     public String getInfo() {
         return "Employee Name: " + getName() + ", ID: " + getID() + ", Email: " + getEmail() +
-               ", Manager ID: " + managerID;
+                ", Manager ID: " + managerID;
     }
 
-    /*public static void main(String[] args) {
-        List<String> tasks = new ArrayList<>();
-        tasks.add("Task1");
-        tasks.add("Task2");
-
-        List<String> projects = new ArrayList<>();
-        projects.add("Project1");
-        projects.add("Project2");
-
-        // Create an Employee object
-        Employee employee = new Employee("John Doe", "E123", "M456", tasks, projects);
-
-        // Print employee details
-        System.out.println("Employee Name: " + employee.getName());
-        System.out.println("Employee ID: " + employee.getId());
-        System.out.println("Manager ID: " + employee.getManagerId());
-        System.out.println("Assigned Tasks: " + employee.getAssignedTaskIds());
-        System.out.println("Project IDs: " + employee.getProjectIds());
-    }*/
 }
-

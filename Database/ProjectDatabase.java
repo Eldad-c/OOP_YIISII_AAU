@@ -26,7 +26,8 @@ public class ProjectDatabase {
     }
 
     public void update(Project project) {
-        if (project == null) return;
+        if (project == null)
+            return;
         for (int i = 0; i < projectList.size(); i++) {
             if (projectList.get(i).getID().equals(project.getID())) {
                 projectList.set(i, project);
