@@ -1,5 +1,6 @@
 package Interfaces;
 
-public class Employee {
+public class Employee extends person {
+    
     
 }
