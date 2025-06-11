@@ -4,9 +4,7 @@ import Database.ManagerDatabase;
 import Database.ProjectDatabase;
 import Database.EmployeeDatabase;
 import Database.PersonDatabase;
-import Database.TaskDatabase;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class Executive extends Person {
     private ArrayList<String> organizationManagersList;

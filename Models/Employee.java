@@ -1,20 +1,15 @@
 package Models;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class Employee extends Person {
     private String managerID;
-    private String projectID;
-    private String EmployeeID;
     private ArrayList<String> assignedTaskIds;
     private ArrayList<String> projectIds;
 
-    public Employee(String managerID, String projectID, String EmployeeID, String name, String ID, String email, String password) {
+    public Employee(String managerID, String name, String ID, String email, String password) {
         super(name, ID, email, password);
         this.managerID = managerID;
-        this.projectID = projectID;
-        this.EmployeeID = EmployeeID;
         this.assignedTaskIds = new ArrayList<>();
         this.projectIds = new ArrayList<>();
     }
@@ -25,22 +20,6 @@ public class Employee extends Person {
 
     public void setManagerID(String managerID) {
         this.managerID = managerID;
-    }
-
-    public String getProjectID() {
-        return projectID;
-    }
-
-    public void setProjectID(String projectID) {
-        this.projectID = projectID;
-    }
-
-    public String getEmployeeID() {
-        return EmployeeID;
-    }
-
-    public void setEmployeeID(String employeeID) {
-        EmployeeID = employeeID;
     }
 
     public ArrayList<String> getAssignedTaskIds() {
@@ -90,7 +69,7 @@ public class Employee extends Person {
     @Override
     public String getInfo() {
         return "Employee Name: " + getName() + ", ID: " + getID() + ", Email: " + getEmail() +
-               ", Manager ID: " + managerID + ", Project ID: " + projectID + ", Employee ID: " + EmployeeID;
+               ", Manager ID: " + managerID;
     }
 
     /*public static void main(String[] args) {

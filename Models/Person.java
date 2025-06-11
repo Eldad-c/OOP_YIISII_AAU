@@ -37,8 +37,6 @@ public abstract class Person {
         this.email = email;
     }
 
-    abstract public String getInfo();
-
     public String getPassword() {
         return password;
     }
@@ -46,4 +44,6 @@ public abstract class Person {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    abstract public String getInfo();
 }
