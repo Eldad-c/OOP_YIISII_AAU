@@ -5,7 +5,7 @@ public class Employee extends person {
     private List<String> assignedTaskIds; // IDs of specific tasks assigned to this employee
     private List<String> projectIds; // IDs of projects this employee is actively involved in
 //constructor
-    ublic Employee(String name, String id, String managerId, List<String> assignedTaskIds, List<String> projectIds) {
+    public Employee(String name, String id, String managerId, List<String> assignedTaskIds, List<String> projectIds) {
         super(name, id); // Call the constructor of the Person class
         this.managerId = managerId;
         this.assignedTaskIds = assignedTaskIds;
