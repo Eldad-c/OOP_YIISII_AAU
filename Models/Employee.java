@@ -58,7 +58,7 @@ public class Employee extends Person {
 
 
     @Override
-    public String getinfo() {
+    public String getInfo() {
         return "Employee Name: " + getName() + ", ID: " + getID() + ", Email: " + getEmail() +
                ", Manager ID: " + managerID + ", Project ID: " + projectID + ", Employee ID: " + EmployeeID;
     }

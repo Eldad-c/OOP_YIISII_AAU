@@ -12,7 +12,7 @@ public class Manager extends Person {
 
     }
    @Override 
-    public String getinfo() {
+    public String getInfo() {
         return "Manager Name: " + getName() + ", ID: " + getID() + ", Email: " + getEmail() +
                ", Managed Project ID: " + managedProjectID + ", Managed Employee ID: " + managedEmployeeID;
     }

@@ -20,7 +20,61 @@ public class Project {
         this.taskIDs = taskIDs; 
 
     }
+    public String getID() {
+        return ID;
+    }
 
+    public void setID(String ID) {
+        this.ID = ID;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public String getDescriptionLink() {
+        return descriptionLink;
+    }
+    public void setDescriptionLink(String descriptionLink) {
+        this.descriptionLink = descriptionLink;
+    }
+    public String getStartDate() {
+        return startDate;
+    }
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+    public String getEndDate() {
+        return endDate;
+    }
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
+    }
+    public String getStatus() {
+        return status;
+    }
+    public void setStatus(String status) {
+        this.status = status;
+    }
+    public String getManagerID() {
+        return managerID;
+    }
+    public void setManagerID(String managerID) {
+        this.managerID = managerID;
+    }
+    public String getTaskIDs() {
+        return taskIDs;
+    }
+    public void setTaskIDs(String taskIDs) {
+        this.taskIDs = taskIDs;
+    }
+    public String getInfo() {
+        return "Project Name: " + name + ", ID: " + ID + ", Description Link: " + descriptionLink +
+               ", Start Date: " + startDate + ", End Date: " + endDate + ", Status: " + status +
+               ", Manager ID: " + managerID + ", Task IDs: " + taskIDs;
+    }
+   
     // void addTask( Task newTask, TaskDatabase taskDb){
     //     taskDb.addTask(newTask);
     //     this.taskIDs += "," + newTask.getID();
