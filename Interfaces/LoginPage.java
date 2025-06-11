@@ -1,4 +1,4 @@
-package Interfaces;
+package GUI;
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
@@ -9,8 +9,8 @@ public class LoginPage {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton, registerButton;
-    private JRadioButton employeeRadioButton, managerRadioButton, executiveRadioButton ;
-
+    private JComboBox<String> roleComboBox;
+    
     public LoginPage() {
         JFrame frame = new JFrame("PMS - Login");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -52,28 +52,44 @@ public class LoginPage {
         // Roles
         JPanel rolePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         JLabel roleLabel = new JLabel("Role");
-        employeeRadioButton = new JRadioButton("Employee");
-        managerRadioButton = new JRadioButton("Manager");
-        executiveRadioButton = new JRadioButton("Executive");
-        ButtonGroup roleGroup = new ButtonGroup();
-        roleGroup.add(employeeRadioButton);
-        roleGroup.add(managerRadioButton);
-        roleGroup.add(executiveRadioButton);
+        String[] roles = {"Select Role", "Employee", "Manager", "Executive"};
+        roleComboBox = new JComboBox<>(roles);
         rolePanel.add(roleLabel);
-        rolePanel.add(employeeRadioButton);
-        rolePanel.add(managerRadioButton);
-        rolePanel.add(executiveRadioButton);
+        rolePanel.add(roleComboBox);
         gbc.gridx = 0;
         gbc.gridy = 4;
         frame.add(rolePanel, gbc);
 
         // Buttons
-        loginButton = new JButton("Login");
+      loginButton = new JButton("Login");
+        loginButton.addActionListener(new ActionListener() {
+            @Override
+             public void actionPerformed(ActionEvent e) {
+                String username = usernameField.getText();
+                String password = new String(passwordField.getPassword());
+                String role = (String) roleComboBox.getSelectedItem();
+
+                // Simple validation
+                if (username.isEmpty() || password.isEmpty() || role.equals("Select Role")) {
+                    JOptionPane.showMessageDialog(frame, "Please fill out all fields.", "Error", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(frame, "Logged in as: " + username + " (" + role + ")");
+                }
+            }
+        });
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.gridwidth = 1;
         frame.add(loginButton, gbc);
+
         registerButton = new JButton("Register");
+        registerButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Registration logic (placeholder)
+                JOptionPane.showMessageDialog(frame, "Registration functionality not implemented.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
         gbc.gridx = 1;
         gbc.gridy = 5;
         frame.add(registerButton, gbc);
@@ -82,6 +98,14 @@ public class LoginPage {
     }
 
     public static void main(String[] args) {
-        new LoginPage();
+        LoginPage loginPage = new LoginPage();
+    }
+
+    private String getSelectedRole() {
+        String selectedRole = (String) roleComboBox.getSelectedItem();
+        if (selectedRole != null && !selectedRole.equals("Select Role")) {
+            return selectedRole;
+        }
+        return null;
     }
 }
