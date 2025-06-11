@@ -57,7 +57,6 @@
 
 ## II. Key Methods and Functionality
 
-This section details the actions each class can perform, with an emphasis on logical data access. Many methods will interact with conceptual "Database" classes to retrieve actual objects from their IDs.
 
 ### Person
 
