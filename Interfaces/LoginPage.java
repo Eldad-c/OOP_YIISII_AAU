@@ -1,5 +1,5 @@
-package GUI;
-import k.java.models.Employee; // Import the Employee class
+package Interfaces;
+import Models.Employee; // Import the Employee class
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
