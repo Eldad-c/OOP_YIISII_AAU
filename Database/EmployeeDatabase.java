@@ -50,7 +50,10 @@ public class EmployeeDatabase {
     }
 
     private void saveToFile() {
-        try (PrintWriter pw = new PrintWriter(new FileWriter(FILE_NAME))) {
+        try {
+            java.io.File dir = new java.io.File("./Database");
+            if (!dir.exists()) dir.mkdirs();
+            PrintWriter pw = new PrintWriter(new FileWriter(FILE_NAME));
             for (Employee e : employeeList) {
                 // Format: id|name|email|password|managerID|assignedTaskIds(comma)|projectIds(comma)
                 pw.print(e.getID() + "|" + e.getName() + "|" + e.getEmail() + "|" + e.getPassword() + "|" + e.getManagerID() + "|");
@@ -58,6 +61,7 @@ public class EmployeeDatabase {
                 pw.print("|");
                 pw.println(String.join(",", e.getProjectIds()));
             }
+            pw.close();
         } catch (IOException ex) {
             System.out.println("Error: " + ex.getMessage());
         }
@@ -65,6 +69,8 @@ public class EmployeeDatabase {
 
     private void loadFromFile() {
         employeeList.clear();
+        File dir = new File("./Database");
+        if (!dir.exists()) dir.mkdirs();
         File file = new File(FILE_NAME);
         if (!file.exists()) return;
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {

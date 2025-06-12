@@ -51,12 +51,16 @@ public class ProjectDatabase {
     }
 
     private void saveToFile() {
-        try (PrintWriter pw = new PrintWriter(new FileWriter(FILE_NAME))) {
+        try {
+            java.io.File dir = new java.io.File("./Database");
+            if (!dir.exists()) dir.mkdirs();
+            PrintWriter pw = new PrintWriter(new FileWriter(FILE_NAME));
             for (Project p : projectList) {
                 // Format: id|name|descriptionLink|startDate|endDate|status|managerID|taskIDs(comma)
                 pw.print(p.getID() + "|" + p.getName() + "|" + p.getDescriptionLink() + "|" + p.getStartDate() + "|" + p.getEndDate() + "|" + p.getStatus() + "|" + p.getManagerID() + "|");
                 pw.println(String.join(",", p.getTaskIDs()));
             }
+            pw.close();
         } catch (IOException ex) {
             System.out.println("Error: " + ex.getMessage());
         }
@@ -64,6 +68,8 @@ public class ProjectDatabase {
 
     private void loadFromFile() {
         projectList.clear();
+        File dir = new File("./Database");
+        if (!dir.exists()) dir.mkdirs();
         File file = new File(FILE_NAME);
         if (!file.exists())
             return;
