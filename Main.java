@@ -24,7 +24,7 @@ public class Main {
 
         frame = new JFrame("Project Management System");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 600);
+        frame.setSize(1600, 900);
 
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);

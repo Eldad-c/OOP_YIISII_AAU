@@ -204,8 +204,12 @@ public class ExecutiveGUI extends JPanel {
         if (name == null || name.trim().isEmpty()) return;
         String email = JOptionPane.showInputDialog(this, "Enter email:");
         if (email == null || email.trim().isEmpty()) return;
-        String password = JOptionPane.showInputDialog(this, "Enter password:");
-        if (password == null || password.trim().isEmpty()) return;
+        // Password input as hidden field
+        JPasswordField passwordField = new JPasswordField();
+        int pwResult = JOptionPane.showConfirmDialog(this, passwordField, "Enter password:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (pwResult != JOptionPane.OK_OPTION) return;
+        String password = new String(passwordField.getPassword());
+        if (password.trim().isEmpty()) return;
         if (type.equals("Employee")) {
             String managerId = JOptionPane.showInputDialog(this, "Enter manager ID for this employee:");
             if (managerId == null || managerId.trim().isEmpty()) return;
@@ -262,8 +266,12 @@ public class ExecutiveGUI extends JPanel {
         if (name == null || name.trim().isEmpty()) return;
         String email = JOptionPane.showInputDialog(this, "Enter email:");
         if (email == null || email.trim().isEmpty()) return;
-        String password = JOptionPane.showInputDialog(this, "Enter password:");
-        if (password == null || password.trim().isEmpty()) return;
+        // Password input as hidden field
+        JPasswordField passwordField = new JPasswordField();
+        int pwResult = JOptionPane.showConfirmDialog(this, passwordField, "Enter password:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (pwResult != JOptionPane.OK_OPTION) return;
+        String password = new String(passwordField.getPassword());
+        if (password.trim().isEmpty()) return;
         Models.Executive exec = new Models.Executive(name, id, email, password);
         if (isAdd) executiveDb.add(exec); else executiveDb.update(exec);
         refreshDisplay();
