@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public class TaskDatabase {
     private ArrayList<Task> taskList;
-    private static final String FILE_NAME = "TaskDatabase.txt";
+    private static final String FILE_NAME = "./Database/TaskDatabase.txt";
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
     public TaskDatabase() {

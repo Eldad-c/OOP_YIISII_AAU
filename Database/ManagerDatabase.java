@@ -6,7 +6,7 @@ import java.io.*;
 
 public class ManagerDatabase {
     private ArrayList<Manager> managerList;
-    private static final String FILE_NAME = "ManagerDatabase.txt";
+    private static final String FILE_NAME = "./Database/ManagerDatabase.txt";
 
     public ManagerDatabase() {
         managerList = new ArrayList<>();

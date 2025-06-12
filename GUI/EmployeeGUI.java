@@ -9,6 +9,12 @@ public class EmployeeGUI extends JPanel {
     private JButton updateTaskBtn, backBtn;
     private BackListener backListener;
 
+    // --- Backend references and current user ---
+    private Models.Employee currentEmployee;
+    private Database.EmployeeDatabase employeeDb;
+    private Database.TaskDatabase taskDb;
+    private Database.ProjectDatabase projectDb;
+
     public interface BackListener {
         void onBack();
     }
@@ -60,21 +66,59 @@ public class EmployeeGUI extends JPanel {
         add(backBtn, gbc);
 
         // Event Listener
-        updateTaskBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Update Task Status clicked");
-                // Placeholder: Add logic here
-            }
-        });
+        updateTaskBtn.addActionListener(e -> showUpdateTaskDialog());
+        backBtn.addActionListener(e -> { if (backListener != null) backListener.onBack(); });
+    }
 
-        backBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (backListener != null) {
-                    backListener.onBack();
-                }
+    public void setEmployeeAndDatabases(Models.Employee emp, Database.EmployeeDatabase empDb, Database.TaskDatabase tDb, Database.ProjectDatabase pDb) {
+        this.currentEmployee = emp;
+        this.employeeDb = empDb;
+        this.taskDb = tDb;
+        this.projectDb = pDb;
+        refreshDisplay();
+    }
+
+    // --- Display assigned tasks and projects ---
+    private void refreshDisplay() {
+        if (currentEmployee == null || taskDb == null || projectDb == null) {
+            taskArea.setText("No employee loaded.");
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("Assigned Tasks:\n");
+        for (Models.Task t : currentEmployee.getAssignedTasks(taskDb)) {
+            sb.append("- Task ID: ").append(t.getID())
+              .append(", Status: ").append(t.getStatus())
+              .append(", Due: ").append(t.getDueDate())
+              .append(t.isOverdue() ? " (OVERDUE)" : "")
+              .append("\n");
+        }
+        sb.append("\nProjects:\n");
+        for (String projectId : currentEmployee.getProjectIds()) {
+            Models.Project p = projectDb.getById(projectId);
+            if (p != null) {
+                sb.append("- Project: ").append(p.getName())
+                  .append(" (Status: ").append(p.getStatus()).append(")\n");
             }
-        });
+        }
+        taskArea.setText(sb.toString());
+    }
+
+    // --- Update Task Status Action ---
+    private void showUpdateTaskDialog() {
+        if (currentEmployee == null || taskDb == null) return;
+        String taskId = JOptionPane.showInputDialog(this, "Enter Task ID to update:");
+        if (taskId == null || taskId.isEmpty()) return;
+        Models.Task t = taskDb.getById(taskId);
+        if (t == null || !currentEmployee.getAssignedTaskIds().contains(taskId)) {
+            JOptionPane.showMessageDialog(this, "Invalid Task ID.");
+            return;
+        }
+        String newStatus = JOptionPane.showInputDialog(this, "Enter new status for Task " + taskId + ":");
+        if (newStatus == null || newStatus.isEmpty()) return;
+        t.changeStatus(newStatus);
+        taskDb.update(t);
+        refreshDisplay();
+        JOptionPane.showMessageDialog(this, "Task status updated.");
     }
 }

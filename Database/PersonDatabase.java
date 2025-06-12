@@ -6,7 +6,7 @@ import java.io.*;
 
 public class PersonDatabase {
     private ArrayList<Person> personList;
-    private static final String FILE_NAME = "PersonDatabase.txt";
+    private static final String FILE_NAME = "./Database/PersonDatabase.txt";
 
     public PersonDatabase() {
         personList = new ArrayList<>();

@@ -11,6 +11,13 @@ public class ProjectManagerGUI extends JPanel {
     private JButton backBtn;
     private BackListener backListener;
 
+    // --- Backend references and current manager ---
+    private Models.Manager currentManager;
+    private Database.ManagerDatabase managerDb;
+    private Database.EmployeeDatabase employeeDb;
+    private Database.ProjectDatabase projectDb;
+    private Database.TaskDatabase taskDb;
+
     public interface BackListener {
         void onBack();
     }
@@ -82,29 +89,101 @@ public class ProjectManagerGUI extends JPanel {
         add(backBtn, gbc);
 
         // Add event handling
-        taskDropdown.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String selectedTask = (String) taskDropdown.getSelectedItem();
-                System.out.println("Task Action Selected: " + selectedTask);
-            }
-        });
+        taskDropdown.addActionListener(e -> handleTaskAction());
+        projectDropdown.addActionListener(e -> handleProjectAction());
+        backBtn.addActionListener(e -> { if (backListener != null) backListener.onBack(); });
+    }
 
-        projectDropdown.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String selectedProject = (String) projectDropdown.getSelectedItem();
-                System.out.println("Project Action Selected: " + selectedProject);
-            }
-        });
+    public void setManagerAndDatabases(Models.Manager mgr, Database.ManagerDatabase mgrDb, Database.EmployeeDatabase empDb, Database.ProjectDatabase projDb, Database.TaskDatabase tDb) {
+        this.currentManager = mgr;
+        this.managerDb = mgrDb;
+        this.employeeDb = empDb;
+        this.projectDb = projDb;
+        this.taskDb = tDb;
+        refreshDisplay();
+    }
 
-        backBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (backListener != null) {
-                    backListener.onBack();
+    // --- Display managed projects and employees ---
+    private void refreshDisplay() {
+        if (currentManager == null || projectDb == null || employeeDb == null || taskDb == null) {
+            projectArea.setText("No manager loaded.");
+            employeeArea.setText("");
+            return;
+        }
+        StringBuilder projSb = new StringBuilder();
+        for (String projId : currentManager.getManagedProjectIds()) {
+            Models.Project p = projectDb.getById(projId);
+            if (p != null) {
+                projSb.append("- Project: ").append(p.getName())
+                      .append(" (Status: ").append(p.getStatus()).append(")\n");
+                for (String taskId : p.getTaskIDs()) {
+                    Models.Task t = taskDb.getById(taskId);
+                    if (t != null) {
+                        projSb.append("    Task: ").append(t.getID())
+                              .append(", Status: ").append(t.getStatus())
+                              .append(", Assigned: ").append(t.getAssignedUserID()).append("\n");
+                    }
                 }
             }
-        });
+        }
+        projectArea.setText(projSb.toString());
+
+        StringBuilder empSb = new StringBuilder();
+        for (String empId : currentManager.getManagedEmployeeIds()) {
+            Models.Employee e = employeeDb.getById(empId);
+            if (e != null) {
+                empSb.append("- Employee: ").append(e.getName())
+                      .append(" (ID: ").append(e.getID()).append(")\n");
+                for (String taskId : e.getAssignedTaskIds()) {
+                    Models.Task t = taskDb.getById(taskId);
+                    if (t != null) {
+                        empSb.append("    Task: ").append(t.getID())
+                              .append(", Status: ").append(t.getStatus()).append("\n");
+                    }
+                }
+            }
+        }
+        employeeArea.setText(empSb.toString());
+    }
+
+    // --- Handle task and project actions ---
+    private void handleTaskAction() {
+        String selectedTask = (String) taskDropdown.getSelectedItem();
+        if (selectedTask != null) {
+            switch (selectedTask) {
+                case "Update Task Status":
+                    // Logic to update task status
+                    JOptionPane.showMessageDialog(this, "Update Task Status selected.");
+                    break;
+                case "Add New Task":
+                    // Logic to add new task
+                    JOptionPane.showMessageDialog(this, "Add New Task selected.");
+                    break;
+                case "Assign Task":
+                    // Logic to assign task
+                    JOptionPane.showMessageDialog(this, "Assign Task selected.");
+                    break;
+            }
+        }
+    }
+
+    private void handleProjectAction() {
+        String selectedProject = (String) projectDropdown.getSelectedItem();
+        if (selectedProject != null) {
+            switch (selectedProject) {
+                case "Add New Project":
+                    // Logic to add new project
+                    JOptionPane.showMessageDialog(this, "Add New Project selected.");
+                    break;
+                case "Update Project Status":
+                    // Logic to update project status
+                    JOptionPane.showMessageDialog(this, "Update Project Status selected.");
+                    break;
+                case "Remove Project":
+                    // Logic to remove project
+                    JOptionPane.showMessageDialog(this, "Remove Project selected.");
+                    break;
+            }
+        }
     }
 }

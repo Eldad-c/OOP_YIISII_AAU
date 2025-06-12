@@ -6,7 +6,7 @@ import java.io.*;
 
 public class ExecutiveDatabase {
     private ArrayList<Executive> executiveList;
-    private static final String FILE_NAME = "ExecutiveDatabase.txt";
+    private static final String FILE_NAME = "./Database/ExecutiveDatabase.txt";
 
     public ExecutiveDatabase() {
         executiveList = new ArrayList<>();
