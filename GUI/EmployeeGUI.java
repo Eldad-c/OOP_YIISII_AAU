@@ -4,9 +4,12 @@ import javax.swing.*;
 import java.awt.*;
 
 public class EmployeeGUI extends JPanel {
-    private JTextArea taskArea, projectArea;
-    private JButton updateTaskBtn, updateProjectBtn, backBtn;
+    private JTextArea taskArea;
+    private JButton updateTaskBtn, backBtn;
     private BackListener backListener;
+    private JComboBox<String> projectDropdown;
+    private DefaultComboBoxModel<String> projectDropdownModel;
+    private String selectedProjectId = null;
 
     // --- Backend references and current user ---
     private Models.Employee currentEmployee;
@@ -28,32 +31,31 @@ public class EmployeeGUI extends JPanel {
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.BOTH;
 
-        // --- Assigned Tasks ---
-        JLabel taskLabel = new JLabel("Assigned Tasks:");
-        taskLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        // --- Assigned Projects Dropdown ---
+        JLabel projectLabel = new JLabel("Assigned Projects:");
+        projectLabel.setFont(new Font("Arial", Font.BOLD, 14));
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+        add(projectLabel, gbc);
+        projectDropdownModel = new DefaultComboBoxModel<>();
+        projectDropdown = new JComboBox<>(projectDropdownModel);
+        gbc.gridy = 1;
+        add(projectDropdown, gbc);
+
+        // --- Assigned Tasks ---
+        JLabel taskLabel = new JLabel("Tasks for Selected Project:");
+        taskLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        gbc.gridy = 2;
         add(taskLabel, gbc);
         taskArea = new JTextArea(8, 40);
         taskArea.setEditable(false);
-        gbc.gridy = 1;
-        add(new JScrollPane(taskArea), gbc);
-
-        // --- Assigned Projects ---
-        JLabel projectLabel = new JLabel("Assigned Projects:");
-        projectLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        gbc.gridy = 2;
-        add(projectLabel, gbc);
-        projectArea = new JTextArea(6, 40);
-        projectArea.setEditable(false);
         gbc.gridy = 3;
-        add(new JScrollPane(projectArea), gbc);
+        add(new JScrollPane(taskArea), gbc);
 
         // --- Buttons ---
         updateTaskBtn = new JButton("Update Task Status");
-        updateProjectBtn = new JButton("Update Project Status");
         backBtn = new JButton("Back");
         JPanel btnPanel = new JPanel();
-        btnPanel.add(updateTaskBtn); btnPanel.add(updateProjectBtn); btnPanel.add(backBtn);
+        btnPanel.add(updateTaskBtn); btnPanel.add(backBtn);
         gbc.gridy = 4;
         add(btnPanel, gbc);
 
@@ -61,11 +63,19 @@ public class EmployeeGUI extends JPanel {
         updateTaskBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) { showUpdateTaskDialog(); }
         });
-        updateProjectBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) { showUpdateProjectDialog(); }
-        });
         backBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) { if (backListener != null) backListener.onBack(); }
+        });
+        projectDropdown.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                String selected = (String) projectDropdown.getSelectedItem();
+                if (selected != null && !selected.equals("No projects")) {
+                    selectedProjectId = selected.split(" - ")[0];
+                } else {
+                    selectedProjectId = null;
+                }
+                updateTaskAreaForSelectedProject();
+            }
         });
     }
 
@@ -81,30 +91,63 @@ public class EmployeeGUI extends JPanel {
     private void refreshDisplay() {
         if (currentEmployee == null || taskDb == null || projectDb == null) {
             taskArea.setText("No employee loaded.");
-            projectArea.setText("");
+            projectDropdownModel.removeAllElements();
+            projectDropdownModel.addElement("No projects");
             return;
         }
-        StringBuilder sb = new StringBuilder();
-        sb.append("Assigned Tasks:\n");
-        for (Models.Task t : currentEmployee.getAssignedTasks(taskDb)) {
-            sb.append("- Task ID: ").append(t.getID())
-              .append(", Status: ").append(t.getStatus())
-              .append(", Due: ").append(t.getDueDate())
-              .append(t.isOverdue() ? " (OVERDUE)" : "")
-              .append("\n");
+        // Populate project dropdown with only the employee's projects
+        projectDropdownModel.removeAllElements();
+        java.util.List<String> projectIds = currentEmployee.getProjectIds();
+        if (projectIds.isEmpty()) {
+            projectDropdownModel.addElement("No projects");
+            selectedProjectId = null;
+            taskArea.setText("No tasks");
+            return;
         }
-        taskArea.setText(sb.toString());
-
-        StringBuilder psb = new StringBuilder();
-        psb.append("Assigned Projects:\n");
-        for (String projectId : currentEmployee.getProjectIds()) {
+        for (String projectId : projectIds) {
             Models.Project p = projectDb.getById(projectId);
             if (p != null) {
-                psb.append("- Project: ").append(p.getName())
-                  .append(" (Status: ").append(p.getStatus()).append(")\n");
+                projectDropdownModel.addElement(projectId + " - " + p.getName());
             }
         }
-        projectArea.setText(psb.toString());
+        // Select the first project by default if none selected
+        if (selectedProjectId == null && projectDropdownModel.getSize() > 0) {
+            String first = (String) projectDropdownModel.getElementAt(0);
+            if (!first.equals("No projects"))
+                selectedProjectId = first.split(" - ")[0];
+        }
+        if (selectedProjectId != null) {
+            projectDropdown.setSelectedItem(selectedProjectId + " - " + projectDb.getById(selectedProjectId).getName());
+        }
+        updateTaskAreaForSelectedProject();
+    }
+
+    private void updateTaskAreaForSelectedProject() {
+        if (selectedProjectId == null || selectedProjectId.isEmpty() || projectDb.getById(selectedProjectId) == null) {
+            taskArea.setText("No tasks");
+            return;
+        }
+        Models.Project selectedProject = projectDb.getById(selectedProjectId);
+        java.util.List<String> taskIds = selectedProject.getTaskIDs();
+        StringBuilder sb = new StringBuilder();
+        if (taskIds.isEmpty()) {
+            sb.append("No tasks");
+        } else {
+            boolean hasEmployeeTasks = false;
+            for (String taskId : taskIds) {
+                Models.Task t = taskDb.getById(taskId);
+                if (t != null && t.getAssignedUserID() != null && t.getAssignedUserID().equals(currentEmployee.getID())) {
+                    hasEmployeeTasks = true;
+                    sb.append("- Task ID: ").append(t.getID())
+                      .append(", Status: ").append(t.getStatus())
+                      .append(", Due: ").append(t.getDueDate())
+                      .append(t.isOverdue() ? " (OVERDUE)" : "")
+                      .append("\n");
+                }
+            }
+            if (!hasEmployeeTasks) sb.append("No tasks");
+        }
+        taskArea.setText(sb.toString());
     }
 
     // --- Update Task Status Action ---
@@ -124,24 +167,5 @@ public class EmployeeGUI extends JPanel {
         taskDb.update(t);
         refreshDisplay();
         JOptionPane.showMessageDialog(this, "Task status updated.");
-    }
-
-    // --- Update Project Status Action ---
-    private void showUpdateProjectDialog() {
-        if (currentEmployee == null || projectDb == null) return;
-        String projectId = JOptionPane.showInputDialog(this, "Enter Project ID to update:");
-        if (projectId == null || projectId.isEmpty()) return;
-        Models.Project p = projectDb.getById(projectId);
-        if (p == null || !currentEmployee.getProjectIds().contains(projectId)) {
-            JOptionPane.showMessageDialog(this, "Invalid Project ID.");
-            return;
-        }
-        String[] statusOptions = {"STARTED", "IN_PROGRESS", "COMPLETED", "ON_HOLD", "CANCELLED"};
-        String newStatus = (String) JOptionPane.showInputDialog(this, "Select new status:", "Update Project Status", JOptionPane.PLAIN_MESSAGE, null, statusOptions, p.getStatus());
-        if (newStatus == null || newStatus.isEmpty()) return;
-        p.changeStatus(newStatus);
-        projectDb.update(p);
-        refreshDisplay();
-        JOptionPane.showMessageDialog(this, "Project status updated.");
     }
 }

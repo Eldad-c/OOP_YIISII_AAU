@@ -108,59 +108,61 @@ public class ProjectManagerGUI extends JPanel {
         refreshDisplay();
     }
 
-    // --- Display managed projects and employees ---
+    // --- Display all projects and employees ---
     private void refreshDisplay() {
-        if (currentManager == null || projectDb == null || employeeDb == null || taskDb == null) {
-            projectArea.setText("No manager loaded.");
+        if (projectDb == null || employeeDb == null || taskDb == null) {
+            projectArea.setText("No data loaded.");
             employeeArea.setText("");
             return;
         }
+        // Show ALL projects in the organization
+        java.util.List<Models.Project> allProjects = projectDb.getAll();
         StringBuilder projSb = new StringBuilder();
-        for (String projId : currentManager.getManagedProjectIds()) {
-            Models.Project p = projectDb.getById(projId);
-            if (p != null) {
-                projSb.append("- Project: ").append(p.getName())
-                      .append(" (Status: ").append(p.getStatus()).append(")\n");
-                for (String taskId : p.getTaskIDs()) {
-                    Models.Task t = taskDb.getById(taskId);
-                    if (t != null) {
-                        projSb.append("    Task: ").append(t.getID())
-                              .append(", Status: ").append(t.getStatus())
-                              .append(", Assigned: ").append(t.getAssignedUserID()).append("\n");
-                    }
+        for (Models.Project p : allProjects) {
+            projSb.append("- Project: ").append(p.getName())
+                  .append(" (ID: ").append(p.getID()).append(", Status: ").append(p.getStatus()).append(")\n");
+            for (String taskId : p.getTaskIDs()) {
+                Models.Task t = taskDb.getById(taskId);
+                if (t != null) {
+                    projSb.append("    Task: ").append(t.getID())
+                          .append(", Status: ").append(t.getStatus())
+                          .append(", Assigned: ").append(t.getAssignedUserID() == null ? "[Unassigned]" : t.getAssignedUserID()).append("\n");
                 }
             }
         }
+        if (allProjects.isEmpty()) projSb.append("No projects available.\n");
         projectArea.setText(projSb.toString());
 
+        // Show all employees
+        java.util.List<Models.Employee> allEmployees = employeeDb.getAll();
         StringBuilder empSb = new StringBuilder();
-        for (String empId : currentManager.getManagedEmployeeIds()) {
-            Models.Employee e = employeeDb.getById(empId);
-            if (e != null) {
-                empSb.append("- Employee: ").append(e.getName())
-                      .append(" (ID: ").append(e.getID()).append(")\n");
-                for (String taskId : e.getAssignedTaskIds()) {
-                    Models.Task t = taskDb.getById(taskId);
-                    if (t != null) {
-                        empSb.append("    Task: ").append(t.getID())
-                              .append(", Status: ").append(t.getStatus()).append("\n");
-                    }
+        for (Models.Employee e : allEmployees) {
+            empSb.append("- Employee: ").append(e.getName())
+                  .append(" (ID: ").append(e.getID()).append(")\n");
+            for (String taskId : e.getAssignedTaskIds()) {
+                Models.Task t = taskDb.getById(taskId);
+                if (t != null) {
+                    empSb.append("    Task: ").append(t.getID())
+                          .append(", Status: ").append(t.getStatus()).append("\n");
                 }
             }
         }
+        if (allEmployees.isEmpty()) empSb.append("No employees available.\n");
         employeeArea.setText(empSb.toString());
     }
 
     // --- Task/Project Action Dialogs ---
     private void showUpdateTaskStatusDialog() {
-        if (currentManager == null || taskDb == null) return;
-        String taskId = JOptionPane.showInputDialog(this, "Enter Task ID to update:");
-        if (taskId == null || taskId.isEmpty()) return;
+        if (taskDb == null) return;
+        // Select task from all tasks
+        java.util.List<Models.Task> allTasks = taskDb.getAll();
+        if (allTasks.isEmpty()) { JOptionPane.showMessageDialog(this, "No tasks available."); return; }
+        String[] taskOptions = allTasks.stream().map(t -> t.getID() + " - " + (t.getDescriptionLink() != null ? t.getDescriptionLink() : "No Description")).toArray(String[]::new);
+        String selected = (String) JOptionPane.showInputDialog(this, "Select Task:", "Update Task Status", JOptionPane.PLAIN_MESSAGE, null, taskOptions, taskOptions[0]);
+        if (selected == null) return;
+        String taskId = selected.split(" - ")[0];
         Models.Task t = taskDb.getById(taskId);
-        if (t == null) {
-            JOptionPane.showMessageDialog(this, "Invalid Task ID.");
-            return;
-        }
+        if (t == null) { JOptionPane.showMessageDialog(this, "Invalid Task ID."); return; }
         String[] statusOptions = {"STARTED", "IN_PROGRESS", "COMPLETED", "ON_HOLD", "CANCELLED"};
         String newStatus = (String) JOptionPane.showInputDialog(this, "Select new status:", "Update Task Status", JOptionPane.PLAIN_MESSAGE, null, statusOptions, t.getStatus());
         if (newStatus == null || newStatus.isEmpty()) return;
@@ -171,14 +173,16 @@ public class ProjectManagerGUI extends JPanel {
     }
 
     private void showAddNewTaskDialog() {
-        if (currentManager == null || projectDb == null || taskDb == null) return;
-        String projectId = JOptionPane.showInputDialog(this, "Enter Project ID to add task to:");
-        if (projectId == null || projectId.isEmpty()) return;
+        if (projectDb == null || taskDb == null) return;
+        // Select project from all projects
+        java.util.List<Models.Project> allProjects = projectDb.getAll();
+        if (allProjects.isEmpty()) { JOptionPane.showMessageDialog(this, "No projects available."); return; }
+        String[] projectOptions = allProjects.stream().map(p -> p.getID() + " - " + p.getName()).toArray(String[]::new);
+        String selectedProj = (String) JOptionPane.showInputDialog(this, "Select Project:", "Add Task", JOptionPane.PLAIN_MESSAGE, null, projectOptions, projectOptions[0]);
+        if (selectedProj == null) return;
+        String projectId = selectedProj.split(" - ")[0];
         Models.Project p = projectDb.getById(projectId);
-        if (p == null || !currentManager.getManagedProjectIds().contains(projectId)) {
-            JOptionPane.showMessageDialog(this, "Invalid Project ID.");
-            return;
-        }
+        if (p == null) { JOptionPane.showMessageDialog(this, "Invalid Project ID."); return; }
         String taskId = JOptionPane.showInputDialog(this, "Enter new Task ID:");
         if (taskId == null || taskId.isEmpty() || taskDb.getById(taskId) != null) {
             JOptionPane.showMessageDialog(this, "Invalid or duplicate Task ID.");
@@ -196,21 +200,25 @@ public class ProjectManagerGUI extends JPanel {
     }
 
     private void showAssignTaskDialog() {
-        if (currentManager == null || employeeDb == null || taskDb == null) return;
-        String taskId = JOptionPane.showInputDialog(this, "Enter Task ID to assign:");
-        if (taskId == null || taskId.isEmpty()) return;
+        if (employeeDb == null || taskDb == null) return;
+        // Select task from all tasks
+        java.util.List<Models.Task> allTasks = taskDb.getAll();
+        if (allTasks.isEmpty()) { JOptionPane.showMessageDialog(this, "No tasks available."); return; }
+        String[] taskOptions = allTasks.stream().map(t -> t.getID() + " - " + (t.getDescriptionLink() != null ? t.getDescriptionLink() : "No Description")).toArray(String[]::new);
+        String selectedTask = (String) JOptionPane.showInputDialog(this, "Select Task:", "Assign Task", JOptionPane.PLAIN_MESSAGE, null, taskOptions, taskOptions[0]);
+        if (selectedTask == null) return;
+        String taskId = selectedTask.split(" - ")[0];
         Models.Task t = taskDb.getById(taskId);
-        if (t == null) {
-            JOptionPane.showMessageDialog(this, "Invalid Task ID.");
-            return;
-        }
-        String empId = JOptionPane.showInputDialog(this, "Enter Employee ID to assign to:");
-        if (empId == null || empId.isEmpty()) return;
+        if (t == null) { JOptionPane.showMessageDialog(this, "Invalid Task ID."); return; }
+        // Select employee from all employees
+        java.util.List<Models.Employee> allEmployees = employeeDb.getAll();
+        if (allEmployees.isEmpty()) { JOptionPane.showMessageDialog(this, "No employees available."); return; }
+        String[] empOptions = allEmployees.stream().map(e -> e.getID() + " - " + e.getName()).toArray(String[]::new);
+        String selectedEmp = (String) JOptionPane.showInputDialog(this, "Select Employee:", "Assign Task", JOptionPane.PLAIN_MESSAGE, null, empOptions, empOptions[0]);
+        if (selectedEmp == null) return;
+        String empId = selectedEmp.split(" - ")[0];
         Models.Employee e = employeeDb.getById(empId);
-        if (e == null || !currentManager.getManagedEmployeeIds().contains(empId)) {
-            JOptionPane.showMessageDialog(this, "Invalid Employee ID.");
-            return;
-        }
+        if (e == null) { JOptionPane.showMessageDialog(this, "Invalid Employee ID."); return; }
         t.setAssignedUserID(empId);
         if (!e.getAssignedTaskIds().contains(taskId)) e.getAssignedTaskIds().add(taskId);
         taskDb.update(t);
@@ -220,7 +228,7 @@ public class ProjectManagerGUI extends JPanel {
     }
 
     private void showAddNewProjectDialog() {
-        if (currentManager == null || projectDb == null) return;
+        if (projectDb == null) return;
         String projectId = JOptionPane.showInputDialog(this, "Enter new Project ID:");
         if (projectId == null || projectId.isEmpty() || projectDb.getById(projectId) != null) {
             JOptionPane.showMessageDialog(this, "Invalid or duplicate Project ID.");
@@ -234,23 +242,27 @@ public class ProjectManagerGUI extends JPanel {
         String[] statusOptions = {"STARTED", "IN_PROGRESS", "COMPLETED", "ON_HOLD", "CANCELLED"};
         String status = (String) JOptionPane.showInputDialog(this, "Select status:", "Project Status", JOptionPane.PLAIN_MESSAGE, null, statusOptions, statusOptions[0]);
         if (status == null) return;
-        Models.Project newProj = new Models.Project(projectId, name, desc, startDate, endDate, status, currentManager.getID());
-        currentManager.addManagedProjectId(projectId);
+        // Assign manager as currentManager if available
+        String managerId = (currentManager != null) ? currentManager.getID() : "";
+        Models.Project newProj = new Models.Project(projectId, name, desc, startDate, endDate, status, managerId);
+        if (currentManager != null) currentManager.addManagedProjectId(projectId);
         projectDb.add(newProj);
-        managerDb.update(currentManager);
+        if (managerDb != null && currentManager != null) managerDb.update(currentManager);
         refreshDisplay();
         JOptionPane.showMessageDialog(this, "Project added.");
     }
 
     private void showUpdateProjectStatusDialog() {
-        if (currentManager == null || projectDb == null) return;
-        String projectId = JOptionPane.showInputDialog(this, "Enter Project ID to update:");
-        if (projectId == null || projectId.isEmpty()) return;
+        if (projectDb == null) return;
+        // Select project from all projects
+        java.util.List<Models.Project> allProjects = projectDb.getAll();
+        if (allProjects.isEmpty()) { JOptionPane.showMessageDialog(this, "No projects available."); return; }
+        String[] projectOptions = allProjects.stream().map(p -> p.getID() + " - " + p.getName()).toArray(String[]::new);
+        String selectedProj = (String) JOptionPane.showInputDialog(this, "Select Project:", "Update Project Status", JOptionPane.PLAIN_MESSAGE, null, projectOptions, projectOptions[0]);
+        if (selectedProj == null) return;
+        String projectId = selectedProj.split(" - ")[0];
         Models.Project p = projectDb.getById(projectId);
-        if (p == null || !currentManager.getManagedProjectIds().contains(projectId)) {
-            JOptionPane.showMessageDialog(this, "Invalid Project ID.");
-            return;
-        }
+        if (p == null) { JOptionPane.showMessageDialog(this, "Invalid Project ID."); return; }
         String[] statusOptions = {"STARTED", "IN_PROGRESS", "COMPLETED", "ON_HOLD", "CANCELLED"};
         String newStatus = (String) JOptionPane.showInputDialog(this, "Select new status:", "Update Project Status", JOptionPane.PLAIN_MESSAGE, null, statusOptions, p.getStatus());
         if (newStatus == null || newStatus.isEmpty()) return;
@@ -261,16 +273,17 @@ public class ProjectManagerGUI extends JPanel {
     }
 
     private void showRemoveProjectDialog() {
-        if (currentManager == null || projectDb == null) return;
-        String projectId = JOptionPane.showInputDialog(this, "Enter Project ID to remove:");
-        if (projectId == null || projectId.isEmpty()) return;
-        if (!currentManager.getManagedProjectIds().contains(projectId)) {
-            JOptionPane.showMessageDialog(this, "You do not manage this project.");
-            return;
-        }
-        currentManager.removeManagedProjectId(projectId);
+        if (projectDb == null) return;
+        // Select project from all projects
+        java.util.List<Models.Project> allProjects = projectDb.getAll();
+        if (allProjects.isEmpty()) { JOptionPane.showMessageDialog(this, "No projects available."); return; }
+        String[] projectOptions = allProjects.stream().map(p -> p.getID() + " - " + p.getName()).toArray(String[]::new);
+        String selectedProj = (String) JOptionPane.showInputDialog(this, "Select Project:", "Remove Project", JOptionPane.PLAIN_MESSAGE, null, projectOptions, projectOptions[0]);
+        if (selectedProj == null) return;
+        String projectId = selectedProj.split(" - ")[0];
         projectDb.delete(projectId);
-        managerDb.update(currentManager);
+        if (currentManager != null) currentManager.removeManagedProjectId(projectId);
+        if (managerDb != null && currentManager != null) managerDb.update(currentManager);
         refreshDisplay();
         JOptionPane.showMessageDialog(this, "Project removed.");
     }

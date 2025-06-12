@@ -278,6 +278,19 @@ public class ExecutiveGUI extends JPanel {
         }
         Models.Employee emp = new Models.Employee(managerID == null ? "" : managerID, name, id, email, password);
         employeeDb.add(emp);
+        // Add to manager's managedEmployeeIds if manager selected
+        if (managerID != null && !managerID.isEmpty()) {
+            Models.Manager mgr = managerDb.getById(managerID);
+            if (mgr != null) {
+                mgr.addManagedEmployeeId(id);
+                managerDb.update(mgr);
+            }
+        }
+        // Add to executive's organizationEmployeesList
+        if (currentExecutive != null && !currentExecutive.getOrganizationEmployeesList().contains(id)) {
+            currentExecutive.getOrganizationEmployeesList().add(id);
+            executiveDb.update(currentExecutive);
+        }
         refreshDisplay();
         JOptionPane.showMessageDialog(this, "Employee added.");
     }
@@ -339,6 +352,11 @@ public class ExecutiveGUI extends JPanel {
         if (password.trim().isEmpty()) return;
         Models.Manager mgr = new Models.Manager(name, id, email, password);
         managerDb.add(mgr);
+        // Add to executive's organizationManagersList
+        if (currentExecutive != null && !currentExecutive.getOrganizationManagersList().contains(id)) {
+            currentExecutive.getOrganizationManagersList().add(id);
+            executiveDb.update(currentExecutive);
+        }
         refreshDisplay();
         JOptionPane.showMessageDialog(this, "Manager added.");
     }
@@ -515,11 +533,48 @@ public class ExecutiveGUI extends JPanel {
 
     // --- Generate Report ---
     private void showGenerateReportDialog() {
-        if (currentExecutive == null || projectDb == null || employeeDb == null) return;
-        String[] options = {"PROJECT_PROGRESS", "EMPLOYEE_WORKLOAD"};
-        String reportType = (String) JOptionPane.showInputDialog(this, "Select report type:", "Generate Report", JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-        if (reportType == null) return;
-        Models.Report report = currentExecutive.generateReport(reportType, projectDb, employeeDb);
-        JOptionPane.showMessageDialog(this, report.getContent(), "Report", JOptionPane.INFORMATION_MESSAGE);
+        if (currentExecutive == null || projectDb == null || employeeDb == null || managerDb == null || taskDb == null) return;
+        StringBuilder report = new StringBuilder();
+        report.append("--- PROJECTS OVERVIEW ---\n");
+        java.util.List<Models.Project> projects = projectDb.getAll();
+        if (projects.isEmpty()) {
+            report.append("No projects available.\n");
+        } else {
+            for (Models.Project p : projects) {
+                report.append("Project: ").append(p.getName()).append(" (ID: ").append(p.getID()).append(")\n");
+                report.append("  Status: ").append(p.getStatus()).append("\n");
+                // Manager
+                Models.Manager mgr = managerDb.getById(p.getManagerID());
+                if (mgr != null) {
+                    report.append("  Managed by: ").append(mgr.getName()).append(" (ID: ").append(mgr.getID()).append(")\n");
+                } else {
+                    report.append("  Managed by: [Unknown] (ID: ").append(p.getManagerID()).append(")\n");
+                }
+                // Tasks
+                java.util.List<String> taskIds = p.getTaskIDs();
+                if (taskIds.isEmpty()) {
+                    report.append("  No tasks assigned.\n");
+                } else {
+                    for (String taskId : taskIds) {
+                        Models.Task t = taskDb.getById(taskId);
+                        if (t != null) {
+                            report.append("    Task: ").append(t.getID()).append(" - ").append(t.getDescriptionLink() != null ? t.getDescriptionLink() : "No Description").append("\n");
+                            report.append("      Status: ").append(t.getStatus()).append("\n");
+                            // Assigned employee
+                            Models.Employee emp = employeeDb.getById(t.getAssignedUserID());
+                            if (emp != null) {
+                                report.append("      Assigned to: ").append(emp.getName()).append(" (ID: ").append(emp.getID()).append(")\n");
+                            } else if (t.getAssignedUserID() != null && !t.getAssignedUserID().isEmpty()) {
+                                report.append("      Assigned to: [Unknown] (ID: ").append(t.getAssignedUserID()).append(")\n");
+                            } else {
+                                report.append("      Assigned to: [Unassigned]\n");
+                            }
+                        }
+                    }
+                }
+                report.append("\n");
+            }
+        }
+        JOptionPane.showMessageDialog(this, report.toString(), "Project Report", JOptionPane.INFORMATION_MESSAGE);
     }
 }
