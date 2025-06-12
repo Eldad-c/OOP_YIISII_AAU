@@ -6,7 +6,7 @@ public abstract class Person {
     private String email;
     private String password;
 
-    Person(String name, String ID, String email, String password) {
+    public Person(String name, String ID, String email, String password) {
         this.name = name;
         this.ID = ID;
         this.email = email;
