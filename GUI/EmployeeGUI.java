@@ -95,16 +95,24 @@ public class EmployeeGUI extends JPanel {
             projectDropdownModel.addElement("No projects");
             return;
         }
-        // Populate project dropdown with only the employee's projects
+        // Find all projects where the employee has assigned tasks
+        java.util.List<String> assignedTaskIds = currentEmployee.getAssignedTaskIds();
+        java.util.Set<String> projectIdsWithTasks = new java.util.HashSet<>();
+        for (String taskId : assignedTaskIds) {
+            Models.Task t = taskDb.getById(taskId);
+            if (t != null && t.getProjectID() != null && !t.getProjectID().isEmpty()) {
+                projectIdsWithTasks.add(t.getProjectID());
+            }
+        }
         projectDropdownModel.removeAllElements();
-        java.util.List<String> projectIds = currentEmployee.getProjectIds();
-        if (projectIds.isEmpty()) {
+        if (projectIdsWithTasks.isEmpty()) {
             projectDropdownModel.addElement("No projects");
             selectedProjectId = null;
             taskArea.setText("No tasks");
             return;
         }
-        for (String projectId : projectIds) {
+        projectDropdownModel.addElement("All Projects");
+        for (String projectId : projectIdsWithTasks) {
             Models.Project p = projectDb.getById(projectId);
             if (p != null) {
                 projectDropdownModel.addElement(projectId + " - " + p.getName());
@@ -114,26 +122,50 @@ public class EmployeeGUI extends JPanel {
         if (selectedProjectId == null && projectDropdownModel.getSize() > 0) {
             String first = (String) projectDropdownModel.getElementAt(0);
             if (!first.equals("No projects"))
-                selectedProjectId = first.split(" - ")[0];
+                selectedProjectId = first.equals("All Projects") ? "ALL" : first.split(" - ")[0];
         }
         if (selectedProjectId != null) {
-            projectDropdown.setSelectedItem(selectedProjectId + " - " + projectDb.getById(selectedProjectId).getName());
+            if (selectedProjectId.equals("ALL")) {
+                projectDropdown.setSelectedItem("All Projects");
+            } else {
+                Models.Project p = projectDb.getById(selectedProjectId);
+                if (p != null)
+                    projectDropdown.setSelectedItem(selectedProjectId + " - " + p.getName());
+            }
         }
         updateTaskAreaForSelectedProject();
     }
 
     private void updateTaskAreaForSelectedProject() {
-        if (selectedProjectId == null || selectedProjectId.isEmpty() || projectDb.getById(selectedProjectId) == null) {
+        if (selectedProjectId == null || selectedProjectId.isEmpty() || (selectedProjectId.equals("ALL") && currentEmployee == null)) {
             taskArea.setText("No tasks");
             return;
         }
-        Models.Project selectedProject = projectDb.getById(selectedProjectId);
-        java.util.List<String> taskIds = selectedProject.getTaskIDs();
         StringBuilder sb = new StringBuilder();
-        if (taskIds.isEmpty()) {
-            sb.append("No tasks");
+        boolean hasEmployeeTasks = false;
+        if (selectedProjectId.equals("ALL")) {
+            // Show all tasks assigned to the employee from all projects
+            for (String taskId : currentEmployee.getAssignedTaskIds()) {
+                Models.Task t = taskDb.getById(taskId);
+                if (t != null) {
+                    hasEmployeeTasks = true;
+                    Models.Project p = projectDb.getById(t.getProjectID());
+                    String projectName = (p != null) ? p.getName() : "[Unknown Project]";
+                    sb.append("- Project: ").append(projectName)
+                      .append(" | Task ID: ").append(t.getID())
+                      .append(", Status: ").append(t.getStatus())
+                      .append(", Due: ").append(t.getDueDate())
+                      .append(t.isOverdue() ? " (OVERDUE)" : "")
+                      .append("\n");
+                }
+            }
         } else {
-            boolean hasEmployeeTasks = false;
+            Models.Project selectedProject = projectDb.getById(selectedProjectId);
+            if (selectedProject == null) {
+                taskArea.setText("No tasks");
+                return;
+            }
+            java.util.List<String> taskIds = selectedProject.getTaskIDs();
             for (String taskId : taskIds) {
                 Models.Task t = taskDb.getById(taskId);
                 if (t != null && t.getAssignedUserID() != null && t.getAssignedUserID().equals(currentEmployee.getID())) {
@@ -145,8 +177,8 @@ public class EmployeeGUI extends JPanel {
                       .append("\n");
                 }
             }
-            if (!hasEmployeeTasks) sb.append("No tasks");
         }
+        if (!hasEmployeeTasks) sb.append("No tasks");
         taskArea.setText(sb.toString());
     }
 
