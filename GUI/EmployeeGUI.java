@@ -2,11 +2,10 @@ package GUI;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 
 public class EmployeeGUI extends JPanel {
-    private JTextArea taskArea;
-    private JButton updateTaskBtn, backBtn;
+    private JTextArea taskArea, projectArea;
+    private JButton updateTaskBtn, updateProjectBtn, backBtn;
     private BackListener backListener;
 
     // --- Backend references and current user ---
@@ -26,48 +25,48 @@ public class EmployeeGUI extends JPanel {
     public EmployeeGUI() {
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 15, 5, 15);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.BOTH;
 
-        // Assigned Tasks Label
+        // --- Assigned Tasks ---
         JLabel taskLabel = new JLabel("Assigned Tasks:");
         taskLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.gridwidth = 2;
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
         add(taskLabel, gbc);
-
-        // Minimize space between label and textarea
-        gbc.insets = new Insets(5, 15, 15, 15);
-
-        // Task Area inside ScrollPane
-        taskArea = new JTextArea(8, 50);
-        taskArea.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-        taskArea.setEditable(true);
-        JScrollPane taskScrollPane = new JScrollPane(taskArea);
+        taskArea = new JTextArea(8, 40);
+        taskArea.setEditable(false);
         gbc.gridy = 1;
-        add(taskScrollPane, gbc);
+        add(new JScrollPane(taskArea), gbc);
 
-        // Restore default spacing for buttons
-        gbc.insets = new Insets(15, 15, 15, 15);
-
-        // Update Task Button
-        updateTaskBtn = new JButton("Update Task Status");
+        // --- Assigned Projects ---
+        JLabel projectLabel = new JLabel("Assigned Projects:");
+        projectLabel.setFont(new Font("Arial", Font.BOLD, 14));
         gbc.gridy = 2;
-        gbc.gridwidth = 1;
-        gbc.gridx = 0;
-        gbc.anchor = GridBagConstraints.CENTER;
-        add(updateTaskBtn, gbc);
+        add(projectLabel, gbc);
+        projectArea = new JTextArea(6, 40);
+        projectArea.setEditable(false);
+        gbc.gridy = 3;
+        add(new JScrollPane(projectArea), gbc);
 
-        // Back Button
+        // --- Buttons ---
+        updateTaskBtn = new JButton("Update Task Status");
+        updateProjectBtn = new JButton("Update Project Status");
         backBtn = new JButton("Back");
-        gbc.gridx = 1;
-        add(backBtn, gbc);
+        JPanel btnPanel = new JPanel();
+        btnPanel.add(updateTaskBtn); btnPanel.add(updateProjectBtn); btnPanel.add(backBtn);
+        gbc.gridy = 4;
+        add(btnPanel, gbc);
 
-        // Event Listener
-        updateTaskBtn.addActionListener(e -> showUpdateTaskDialog());
-        backBtn.addActionListener(e -> { if (backListener != null) backListener.onBack(); });
+        // --- Event Listeners ---
+        updateTaskBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) { showUpdateTaskDialog(); }
+        });
+        updateProjectBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) { showUpdateProjectDialog(); }
+        });
+        backBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) { if (backListener != null) backListener.onBack(); }
+        });
     }
 
     public void setEmployeeAndDatabases(Models.Employee emp, Database.EmployeeDatabase empDb, Database.TaskDatabase tDb, Database.ProjectDatabase pDb) {
@@ -82,6 +81,7 @@ public class EmployeeGUI extends JPanel {
     private void refreshDisplay() {
         if (currentEmployee == null || taskDb == null || projectDb == null) {
             taskArea.setText("No employee loaded.");
+            projectArea.setText("");
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -93,15 +93,18 @@ public class EmployeeGUI extends JPanel {
               .append(t.isOverdue() ? " (OVERDUE)" : "")
               .append("\n");
         }
-        sb.append("\nProjects:\n");
+        taskArea.setText(sb.toString());
+
+        StringBuilder psb = new StringBuilder();
+        psb.append("Assigned Projects:\n");
         for (String projectId : currentEmployee.getProjectIds()) {
             Models.Project p = projectDb.getById(projectId);
             if (p != null) {
-                sb.append("- Project: ").append(p.getName())
+                psb.append("- Project: ").append(p.getName())
                   .append(" (Status: ").append(p.getStatus()).append(")\n");
             }
         }
-        taskArea.setText(sb.toString());
+        projectArea.setText(psb.toString());
     }
 
     // --- Update Task Status Action ---
@@ -114,11 +117,31 @@ public class EmployeeGUI extends JPanel {
             JOptionPane.showMessageDialog(this, "Invalid Task ID.");
             return;
         }
-        String newStatus = JOptionPane.showInputDialog(this, "Enter new status for Task " + taskId + ":");
+        String[] statusOptions = {"STARTED", "IN_PROGRESS", "COMPLETED", "ON_HOLD", "CANCELLED"};
+        String newStatus = (String) JOptionPane.showInputDialog(this, "Select new status:", "Update Task Status", JOptionPane.PLAIN_MESSAGE, null, statusOptions, t.getStatus());
         if (newStatus == null || newStatus.isEmpty()) return;
         t.changeStatus(newStatus);
         taskDb.update(t);
         refreshDisplay();
         JOptionPane.showMessageDialog(this, "Task status updated.");
+    }
+
+    // --- Update Project Status Action ---
+    private void showUpdateProjectDialog() {
+        if (currentEmployee == null || projectDb == null) return;
+        String projectId = JOptionPane.showInputDialog(this, "Enter Project ID to update:");
+        if (projectId == null || projectId.isEmpty()) return;
+        Models.Project p = projectDb.getById(projectId);
+        if (p == null || !currentEmployee.getProjectIds().contains(projectId)) {
+            JOptionPane.showMessageDialog(this, "Invalid Project ID.");
+            return;
+        }
+        String[] statusOptions = {"STARTED", "IN_PROGRESS", "COMPLETED", "ON_HOLD", "CANCELLED"};
+        String newStatus = (String) JOptionPane.showInputDialog(this, "Select new status:", "Update Project Status", JOptionPane.PLAIN_MESSAGE, null, statusOptions, p.getStatus());
+        if (newStatus == null || newStatus.isEmpty()) return;
+        p.changeStatus(newStatus);
+        projectDb.update(p);
+        refreshDisplay();
+        JOptionPane.showMessageDialog(this, "Project status updated.");
     }
 }

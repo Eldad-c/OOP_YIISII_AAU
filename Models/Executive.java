@@ -1,9 +1,10 @@
 package Models;
 
-import Database.ManagerDatabase;
 import Database.ProjectDatabase;
 import Database.EmployeeDatabase;
 import Database.PersonDatabase;
+import Database.ManagerDatabase;
+import Database.TaskDatabase;
 import java.util.ArrayList;
 
 public class Executive extends Person {
@@ -139,5 +140,80 @@ public class Executive extends Person {
     public void removeProjectFromOrganization(String projectId, ProjectDatabase projectDb) {
         organizationProjectsList.remove(projectId);
         projectDb.delete(projectId);
+    }
+
+    // --- Manager-like functions for Executives ---
+    public void assignTaskToEmployee(String taskId, String employeeId, EmployeeDatabase empDb, ProjectDatabase projDb, TaskDatabase taskDb) {
+        Employee emp = empDb.getById(employeeId);
+        Task task = taskDb.getById(taskId);
+        if (emp != null && task != null) {
+            if (!emp.getAssignedTaskIds().contains(taskId)) {
+                emp.getAssignedTaskIds().add(taskId);
+            }
+            task.setAssignedUserID(employeeId);
+            empDb.update(emp);
+            taskDb.update(task);
+        }
+    }
+
+    public void assignProjectToEmployee(String projectId, String employeeId, EmployeeDatabase empDb, ProjectDatabase projDb) {
+        Employee emp = empDb.getById(employeeId);
+        Project proj = projDb.getById(projectId);
+        if (emp != null && proj != null) {
+            if (!emp.getProjectIds().contains(projectId)) {
+                emp.getProjectIds().add(projectId);
+            }
+            empDb.update(emp);
+        }
+    }
+
+    public void updateTaskStatus(String taskId, String newStatus, TaskDatabase taskDb) {
+        Task task = taskDb.getById(taskId);
+        if (task != null) {
+            task.changeStatus(newStatus);
+            taskDb.update(task);
+        }
+    }
+
+    public void updateProjectStatus(String projectId, String newStatus, ProjectDatabase projDb) {
+        Project proj = projDb.getById(projectId);
+        if (proj != null) {
+            proj.changeStatus(newStatus);
+            projDb.update(proj);
+        }
+    }
+
+    public void addTask(Task newTask, TaskDatabase taskDb) {
+        if (newTask != null) {
+            taskDb.add(newTask);
+        }
+    }
+
+    public void removeTask(String taskId, TaskDatabase taskDb) {
+        taskDb.delete(taskId);
+    }
+
+    public void addEmployee(Employee newEmp, EmployeeDatabase empDb) {
+        if (newEmp != null) {
+            empDb.add(newEmp);
+            organizationEmployeesList.add(newEmp.getID());
+        }
+    }
+
+    public void removeEmployee(String employeeId, EmployeeDatabase empDb) {
+        empDb.delete(employeeId);
+        organizationEmployeesList.remove(employeeId);
+    }
+
+    public void addManager(Manager newMgr, ManagerDatabase mgrDb) {
+        if (newMgr != null) {
+            mgrDb.add(newMgr);
+            organizationManagersList.add(newMgr.getID());
+        }
+    }
+
+    public void removeManager(String managerId, ManagerDatabase mgrDb) {
+        mgrDb.delete(managerId);
+        organizationManagersList.remove(managerId);
     }
 }

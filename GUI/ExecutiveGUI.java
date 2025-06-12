@@ -120,20 +120,76 @@ public class ExecutiveGUI extends JPanel {
         add(bottomPanel, gbc);
 
         // --- Event Listeners ---
-        addEmployeeBtn.addActionListener(e -> addEmployeeDialog());
-        updateEmployeeBtn.addActionListener(e -> updateEmployeeDialog());
-        removeEmployeeBtn.addActionListener(e -> removeEmployeeDialog());
-        addManagerBtn.addActionListener(e -> addManagerDialog());
-        updateManagerBtn.addActionListener(e -> updateManagerDialog());
-        removeManagerBtn.addActionListener(e -> removeManagerDialog());
-        addProjectBtn.addActionListener(e -> addOrUpdateProjectDialog(true));
-        updateProjectBtn.addActionListener(e -> addOrUpdateProjectDialog(false));
-        removeProjectBtn.addActionListener(e -> removeProjectDialog());
-        addExecutiveBtn.addActionListener(e -> addOrUpdateExecutiveDialog(true));
-        updateExecutiveBtn.addActionListener(e -> addOrUpdateExecutiveDialog(false));
-        removeExecutiveBtn.addActionListener(e -> removeExecutiveDialog());
-        generateReportBtn.addActionListener(e -> showGenerateReportDialog());
-        backBtn.addActionListener(e -> { if (backListener != null) backListener.onBack(); });
+        addEmployeeBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                addEmployeeDialog();
+            }
+        });
+        updateEmployeeBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                updateEmployeeDialog();
+            }
+        });
+        removeEmployeeBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                removeEmployeeDialog();
+            }
+        });
+        addManagerBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                addManagerDialog();
+            }
+        });
+        updateManagerBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                updateManagerDialog();
+            }
+        });
+        removeManagerBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                removeManagerDialog();
+            }
+        });
+        addProjectBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                addOrUpdateProjectDialog(true);
+            }
+        });
+        updateProjectBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                addOrUpdateProjectDialog(false);
+            }
+        });
+        removeProjectBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                removeProjectDialog();
+            }
+        });
+        addExecutiveBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                addOrUpdateExecutiveDialog(true);
+            }
+        });
+        updateExecutiveBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                addOrUpdateExecutiveDialog(false);
+            }
+        });
+        removeExecutiveBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                removeExecutiveDialog();
+            }
+        });
+        generateReportBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                showGenerateReportDialog();
+            }
+        });
+        backBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (backListener != null) backListener.onBack();
+            }
+        });
     }
 
     public void setExecutiveAndDatabases(Models.Executive exec, Database.ExecutiveDatabase execDb, Database.ManagerDatabase mgrDb, Database.EmployeeDatabase empDb, Database.ProjectDatabase projDb, Database.TaskDatabase tDb) {
@@ -247,16 +303,18 @@ public class ExecutiveGUI extends JPanel {
         // Manager selection (optional)
         java.util.List<Models.Manager> managers = managerDb.getAll();
         String[] managerOptions = managers.stream().map(m -> m.getID() + " - " + m.getName()).toArray(String[]::new);
-        String managerID = existing.getManagerID();
+        final String[] selectedManagerID = { existing.getManagerID() };
         if (managerOptions.length > 0) {
-            String currentManager = managerID == null ? null : managers.stream().filter(m -> m.getID().equals(managerID)).map(m -> m.getID() + " - " + m.getName()).findFirst().orElse(managerOptions[0]);
+            String currentManager = selectedManagerID[0] == null ? null : managers.stream().filter(m -> m.getID().equals(selectedManagerID[0])).map(m -> m.getID() + " - " + m.getName()).findFirst().orElse(managerOptions[0]);
             String selected = (String) JOptionPane.showInputDialog(this, "Select manager (optional):", "Manager Selection", JOptionPane.PLAIN_MESSAGE, null, managerOptions, currentManager);
-            if (selected != null && selected.contains(" - ")) managerID = selected.split(" - ")[0];
+            if (selected != null && selected.contains(" - ")) {
+                selectedManagerID[0] = selected.split(" - ")[0];
+            }
         }
         existing.setName(name);
         existing.setEmail(email);
         existing.setPassword(password);
-        existing.setManagerID(managerID == null ? "" : managerID);
+        existing.setManagerID(selectedManagerID[0] == null ? "" : selectedManagerID[0]);
         employeeDb.update(existing);
         refreshDisplay();
         JOptionPane.showMessageDialog(this, "Employee updated.");

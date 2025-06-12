@@ -2,7 +2,6 @@ package GUI;
 
 import java.awt.*;
 import javax.swing.*;
-import java.awt.event.*;
 
 public class ProjectManagerGUI extends JPanel {
     private JTextArea projectArea, employeeArea;
@@ -89,9 +88,15 @@ public class ProjectManagerGUI extends JPanel {
         add(backBtn, gbc);
 
         // Add event handling
-        taskDropdown.addActionListener(e -> handleTaskAction());
-        projectDropdown.addActionListener(e -> handleProjectAction());
-        backBtn.addActionListener(e -> { if (backListener != null) backListener.onBack(); });
+        taskDropdown.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) { handleTaskAction(); }
+        });
+        projectDropdown.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) { handleProjectAction(); }
+        });
+        backBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) { if (backListener != null) backListener.onBack(); }
+        });
     }
 
     public void setManagerAndDatabases(Models.Manager mgr, Database.ManagerDatabase mgrDb, Database.EmployeeDatabase empDb, Database.ProjectDatabase projDb, Database.TaskDatabase tDb) {
@@ -146,22 +151,143 @@ public class ProjectManagerGUI extends JPanel {
         employeeArea.setText(empSb.toString());
     }
 
-    // --- Handle task and project actions ---
+    // --- Task/Project Action Dialogs ---
+    private void showUpdateTaskStatusDialog() {
+        if (currentManager == null || taskDb == null) return;
+        String taskId = JOptionPane.showInputDialog(this, "Enter Task ID to update:");
+        if (taskId == null || taskId.isEmpty()) return;
+        Models.Task t = taskDb.getById(taskId);
+        if (t == null) {
+            JOptionPane.showMessageDialog(this, "Invalid Task ID.");
+            return;
+        }
+        String[] statusOptions = {"STARTED", "IN_PROGRESS", "COMPLETED", "ON_HOLD", "CANCELLED"};
+        String newStatus = (String) JOptionPane.showInputDialog(this, "Select new status:", "Update Task Status", JOptionPane.PLAIN_MESSAGE, null, statusOptions, t.getStatus());
+        if (newStatus == null || newStatus.isEmpty()) return;
+        t.changeStatus(newStatus);
+        taskDb.update(t);
+        refreshDisplay();
+        JOptionPane.showMessageDialog(this, "Task status updated.");
+    }
+
+    private void showAddNewTaskDialog() {
+        if (currentManager == null || projectDb == null || taskDb == null) return;
+        String projectId = JOptionPane.showInputDialog(this, "Enter Project ID to add task to:");
+        if (projectId == null || projectId.isEmpty()) return;
+        Models.Project p = projectDb.getById(projectId);
+        if (p == null || !currentManager.getManagedProjectIds().contains(projectId)) {
+            JOptionPane.showMessageDialog(this, "Invalid Project ID.");
+            return;
+        }
+        String taskId = JOptionPane.showInputDialog(this, "Enter new Task ID:");
+        if (taskId == null || taskId.isEmpty() || taskDb.getById(taskId) != null) {
+            JOptionPane.showMessageDialog(this, "Invalid or duplicate Task ID.");
+            return;
+        }
+        String desc = JOptionPane.showInputDialog(this, "Enter description link (optional):");
+        String[] statusOptions = {"STARTED", "IN_PROGRESS", "COMPLETED", "ON_HOLD", "CANCELLED"};
+        String status = (String) JOptionPane.showInputDialog(this, "Select status:", "Task Status", JOptionPane.PLAIN_MESSAGE, null, statusOptions, statusOptions[0]);
+        if (status == null) return;
+        Models.Task newTask = new Models.Task(taskId, desc, "", status, null, projectId);
+        p.addTask(newTask, taskDb);
+        projectDb.update(p);
+        refreshDisplay();
+        JOptionPane.showMessageDialog(this, "Task added to project.");
+    }
+
+    private void showAssignTaskDialog() {
+        if (currentManager == null || employeeDb == null || taskDb == null) return;
+        String taskId = JOptionPane.showInputDialog(this, "Enter Task ID to assign:");
+        if (taskId == null || taskId.isEmpty()) return;
+        Models.Task t = taskDb.getById(taskId);
+        if (t == null) {
+            JOptionPane.showMessageDialog(this, "Invalid Task ID.");
+            return;
+        }
+        String empId = JOptionPane.showInputDialog(this, "Enter Employee ID to assign to:");
+        if (empId == null || empId.isEmpty()) return;
+        Models.Employee e = employeeDb.getById(empId);
+        if (e == null || !currentManager.getManagedEmployeeIds().contains(empId)) {
+            JOptionPane.showMessageDialog(this, "Invalid Employee ID.");
+            return;
+        }
+        t.setAssignedUserID(empId);
+        if (!e.getAssignedTaskIds().contains(taskId)) e.getAssignedTaskIds().add(taskId);
+        taskDb.update(t);
+        employeeDb.update(e);
+        refreshDisplay();
+        JOptionPane.showMessageDialog(this, "Task assigned to employee.");
+    }
+
+    private void showAddNewProjectDialog() {
+        if (currentManager == null || projectDb == null) return;
+        String projectId = JOptionPane.showInputDialog(this, "Enter new Project ID:");
+        if (projectId == null || projectId.isEmpty() || projectDb.getById(projectId) != null) {
+            JOptionPane.showMessageDialog(this, "Invalid or duplicate Project ID.");
+            return;
+        }
+        String name = JOptionPane.showInputDialog(this, "Enter project name:");
+        if (name == null || name.trim().isEmpty()) return;
+        String desc = JOptionPane.showInputDialog(this, "Enter description link (optional):");
+        String startDate = JOptionPane.showInputDialog(this, "Enter start date (yyyy-MM-dd):");
+        String endDate = JOptionPane.showInputDialog(this, "Enter end date (yyyy-MM-dd):");
+        String[] statusOptions = {"STARTED", "IN_PROGRESS", "COMPLETED", "ON_HOLD", "CANCELLED"};
+        String status = (String) JOptionPane.showInputDialog(this, "Select status:", "Project Status", JOptionPane.PLAIN_MESSAGE, null, statusOptions, statusOptions[0]);
+        if (status == null) return;
+        Models.Project newProj = new Models.Project(projectId, name, desc, startDate, endDate, status, currentManager.getID());
+        currentManager.addManagedProjectId(projectId);
+        projectDb.add(newProj);
+        managerDb.update(currentManager);
+        refreshDisplay();
+        JOptionPane.showMessageDialog(this, "Project added.");
+    }
+
+    private void showUpdateProjectStatusDialog() {
+        if (currentManager == null || projectDb == null) return;
+        String projectId = JOptionPane.showInputDialog(this, "Enter Project ID to update:");
+        if (projectId == null || projectId.isEmpty()) return;
+        Models.Project p = projectDb.getById(projectId);
+        if (p == null || !currentManager.getManagedProjectIds().contains(projectId)) {
+            JOptionPane.showMessageDialog(this, "Invalid Project ID.");
+            return;
+        }
+        String[] statusOptions = {"STARTED", "IN_PROGRESS", "COMPLETED", "ON_HOLD", "CANCELLED"};
+        String newStatus = (String) JOptionPane.showInputDialog(this, "Select new status:", "Update Project Status", JOptionPane.PLAIN_MESSAGE, null, statusOptions, p.getStatus());
+        if (newStatus == null || newStatus.isEmpty()) return;
+        p.changeStatus(newStatus);
+        projectDb.update(p);
+        refreshDisplay();
+        JOptionPane.showMessageDialog(this, "Project status updated.");
+    }
+
+    private void showRemoveProjectDialog() {
+        if (currentManager == null || projectDb == null) return;
+        String projectId = JOptionPane.showInputDialog(this, "Enter Project ID to remove:");
+        if (projectId == null || projectId.isEmpty()) return;
+        if (!currentManager.getManagedProjectIds().contains(projectId)) {
+            JOptionPane.showMessageDialog(this, "You do not manage this project.");
+            return;
+        }
+        currentManager.removeManagedProjectId(projectId);
+        projectDb.delete(projectId);
+        managerDb.update(currentManager);
+        refreshDisplay();
+        JOptionPane.showMessageDialog(this, "Project removed.");
+    }
+
+    // --- Enhanced event handlers ---
     private void handleTaskAction() {
         String selectedTask = (String) taskDropdown.getSelectedItem();
         if (selectedTask != null) {
             switch (selectedTask) {
                 case "Update Task Status":
-                    // Logic to update task status
-                    JOptionPane.showMessageDialog(this, "Update Task Status selected.");
+                    showUpdateTaskStatusDialog();
                     break;
                 case "Add New Task":
-                    // Logic to add new task
-                    JOptionPane.showMessageDialog(this, "Add New Task selected.");
+                    showAddNewTaskDialog();
                     break;
                 case "Assign Task":
-                    // Logic to assign task
-                    JOptionPane.showMessageDialog(this, "Assign Task selected.");
+                    showAssignTaskDialog();
                     break;
             }
         }
@@ -172,16 +298,13 @@ public class ProjectManagerGUI extends JPanel {
         if (selectedProject != null) {
             switch (selectedProject) {
                 case "Add New Project":
-                    // Logic to add new project
-                    JOptionPane.showMessageDialog(this, "Add New Project selected.");
+                    showAddNewProjectDialog();
                     break;
                 case "Update Project Status":
-                    // Logic to update project status
-                    JOptionPane.showMessageDialog(this, "Update Project Status selected.");
+                    showUpdateProjectStatusDialog();
                     break;
                 case "Remove Project":
-                    // Logic to remove project
-                    JOptionPane.showMessageDialog(this, "Remove Project selected.");
+                    showRemoveProjectDialog();
                     break;
             }
         }
