@@ -1,0 +1,25 @@
+# Ignore all compiled Java class files
+*.class
+
+# Ignore database text files (if not needed in version control)
+Database/*.txt
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE/project files
+*.iml
+.idea/
+.vscode/
+*.log
+
+# Ignore other unnecessary files
+*.tmp
+*~
+
+# Allow README and source files
+!README.md
+!Database/*.java
+!GUI/*.java
+!Models/*.java
