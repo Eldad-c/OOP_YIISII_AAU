@@ -198,26 +198,50 @@ public class ExecutiveGUI extends JPanel {
 
     // --- Add/Update Employee or Manager ---
     private void addOrUpdatePersonDialog(String type, boolean isAdd) {
-        String id = JOptionPane.showInputDialog(this, (isAdd ? "Enter new " : "Enter ") + type + " ID:");
-        if (id == null || id.trim().isEmpty()) return;
-        String name = JOptionPane.showInputDialog(this, "Enter name:");
-        if (name == null || name.trim().isEmpty()) return;
-        String email = JOptionPane.showInputDialog(this, "Enter email:");
-        if (email == null || email.trim().isEmpty()) return;
-        // Password input as hidden field
+        String id;
+        if (isAdd) {
+            id = JOptionPane.showInputDialog(this, "Enter new " + type + " ID:");
+            if (id == null || id.trim().isEmpty()) return;
+        } else {
+            id = JOptionPane.showInputDialog(this, "Enter " + type + " ID to update:");
+            if (id == null || id.trim().isEmpty()) return;
+        }
+        String newName = JOptionPane.showInputDialog(this, "Enter name:");
+        if (newName == null || newName.trim().isEmpty()) return;
+        String newEmail = JOptionPane.showInputDialog(this, "Enter email:");
+        if (newEmail == null || newEmail.trim().isEmpty()) return;
         JPasswordField passwordField = new JPasswordField();
         int pwResult = JOptionPane.showConfirmDialog(this, passwordField, "Enter password:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (pwResult != JOptionPane.OK_OPTION) return;
-        String password = new String(passwordField.getPassword());
-        if (password.trim().isEmpty()) return;
+        String newPassword = new String(passwordField.getPassword());
+        if (newPassword.trim().isEmpty()) return;
         if (type.equals("Employee")) {
             String managerId = JOptionPane.showInputDialog(this, "Enter manager ID for this employee:");
             if (managerId == null || managerId.trim().isEmpty()) return;
-            Models.Employee emp = new Models.Employee(managerId, name, id, email, password);
-            if (isAdd) employeeDb.add(emp); else employeeDb.update(emp);
+            if (isAdd) {
+                Models.Employee emp = new Models.Employee(managerId, newName, id, newEmail, newPassword);
+                employeeDb.add(emp);
+            } else {
+                Models.Employee existing = employeeDb.getById(id);
+                if (existing == null) { JOptionPane.showMessageDialog(this, "Employee not found."); return; }
+                existing.setName(newName);
+                existing.setEmail(newEmail);
+                existing.setPassword(newPassword);
+                existing.setManagerID(managerId);
+                employeeDb.update(existing);
+            }
         } else if (type.equals("Manager")) {
-            Models.Manager mgr = new Models.Manager(name, id, email, password);
-            if (isAdd) managerDb.add(mgr); else managerDb.update(mgr);
+            if (isAdd) {
+                Models.Manager mgr = new Models.Manager(newName, id, newEmail, newPassword);
+                managerDb.add(mgr);
+            } else {
+                Models.Manager existing = managerDb.getById(id);
+                if (existing == null) { JOptionPane.showMessageDialog(this, "Manager not found."); return; }
+                existing.setName(newName);
+                existing.setEmail(newEmail);
+                existing.setPassword(newPassword);
+                managerDb.update(existing);
+            }
         }
         refreshDisplay();
         JOptionPane.showMessageDialog(this, type + (isAdd ? " added." : " updated."));
@@ -260,20 +284,34 @@ public class ExecutiveGUI extends JPanel {
 
     // --- Add/Update Executive ---
     private void addOrUpdateExecutiveDialog(boolean isAdd) {
-        String id = JOptionPane.showInputDialog(this, (isAdd ? "Enter new " : "Enter ") + "Executive ID:");
-        if (id == null || id.trim().isEmpty()) return;
-        String name = JOptionPane.showInputDialog(this, "Enter name:");
-        if (name == null || name.trim().isEmpty()) return;
-        String email = JOptionPane.showInputDialog(this, "Enter email:");
-        if (email == null || email.trim().isEmpty()) return;
-        // Password input as hidden field
+        String id;
+        if (isAdd) {
+            id = JOptionPane.showInputDialog(this, "Enter new Executive ID:");
+            if (id == null || id.trim().isEmpty()) return;
+        } else {
+            id = JOptionPane.showInputDialog(this, "Enter Executive ID to update:");
+            if (id == null || id.trim().isEmpty()) return;
+        }
+        String newName = JOptionPane.showInputDialog(this, "Enter name:");
+        if (newName == null || newName.trim().isEmpty()) return;
+        String newEmail = JOptionPane.showInputDialog(this, "Enter email:");
+        if (newEmail == null || newEmail.trim().isEmpty()) return;
         JPasswordField passwordField = new JPasswordField();
         int pwResult = JOptionPane.showConfirmDialog(this, passwordField, "Enter password:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (pwResult != JOptionPane.OK_OPTION) return;
-        String password = new String(passwordField.getPassword());
-        if (password.trim().isEmpty()) return;
-        Models.Executive exec = new Models.Executive(name, id, email, password);
-        if (isAdd) executiveDb.add(exec); else executiveDb.update(exec);
+        String newPassword = new String(passwordField.getPassword());
+        if (newPassword.trim().isEmpty()) return;
+        if (isAdd) {
+            Models.Executive exec = new Models.Executive(newName, id, newEmail, newPassword);
+            executiveDb.add(exec);
+        } else {
+            Models.Executive existing = executiveDb.getById(id);
+            if (existing == null) { JOptionPane.showMessageDialog(this, "Executive not found."); return; }
+            existing.setName(newName);
+            existing.setEmail(newEmail);
+            existing.setPassword(newPassword);
+            executiveDb.update(existing);
+        }
         refreshDisplay();
         JOptionPane.showMessageDialog(this, "Executive " + (isAdd ? "added." : "updated."));
     }

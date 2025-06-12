@@ -51,7 +51,10 @@ public class ExecutiveDatabase {
     }
 
     private void saveToFile() {
-        try (PrintWriter pw = new PrintWriter(new FileWriter(FILE_NAME))) {
+        try {
+            java.io.File dir = new java.io.File("./Database");
+            if (!dir.exists()) dir.mkdirs();
+            PrintWriter pw = new PrintWriter(new FileWriter(FILE_NAME));
             for (Executive e : executiveList) {
                 // Format: id|name|email|password|organizationManagersList(comma)|organizationProjectsList(comma)|organizationEmployeesList(comma)
                 pw.print(e.getID() + "|" + e.getName() + "|" + e.getEmail() + "|" + e.getPassword() + "|");
@@ -61,6 +64,7 @@ public class ExecutiveDatabase {
                 pw.print("|");
                 pw.println(String.join(",", e.getOrganizationEmployeesList()));
             }
+            pw.close();
         } catch (IOException ex) {
             System.out.println("Error: " + ex.getMessage());
         }
@@ -68,9 +72,10 @@ public class ExecutiveDatabase {
 
     private void loadFromFile() {
         executiveList.clear();
+        File dir = new File("./Database");
+        if (!dir.exists()) dir.mkdirs();
         File file = new File(FILE_NAME);
-        if (!file.exists())
-            return;
+        if (!file.exists()) return;
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {

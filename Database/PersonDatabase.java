@@ -52,11 +52,15 @@ public class PersonDatabase {
 
     // Saves all Person objects to a file in the project root directory
     private void saveToFile() {
-        try (PrintWriter pw = new PrintWriter(new FileWriter(FILE_NAME))) {
+        try {
+            java.io.File dir = new java.io.File("./Database");
+            if (!dir.exists()) dir.mkdirs();
+            PrintWriter pw = new PrintWriter(new FileWriter(FILE_NAME));
             for (Person p : personList) {
                 // Format: id|name|email|password|className
                 pw.println(p.getID() + "|" + p.getName() + "|" + p.getEmail() + "|" + p.getPassword() + "|" + p.getClass().getSimpleName());
             }
+            pw.close();
         } catch (IOException ex) {
             System.out.println("Error: " + ex.getMessage());
         }
@@ -65,6 +69,8 @@ public class PersonDatabase {
     // Loads Person objects from a file in the project root directory
     private void loadFromFile() {
         personList.clear();
+        File dir = new File("./Database");
+        if (!dir.exists()) dir.mkdirs();
         File file = new File(FILE_NAME);
         if (!file.exists()) return;
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {

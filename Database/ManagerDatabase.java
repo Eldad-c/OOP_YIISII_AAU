@@ -51,7 +51,10 @@ public class ManagerDatabase {
     }
 
     private void saveToFile() {
-        try (PrintWriter pw = new PrintWriter(new FileWriter(FILE_NAME))) {
+        try {
+            java.io.File dir = new java.io.File("./Database");
+            if (!dir.exists()) dir.mkdirs();
+            PrintWriter pw = new PrintWriter(new FileWriter(FILE_NAME));
             for (Manager m : managerList) {
                 // Format: id|name|email|password|managedProjectIds(comma)|managedEmployeeIds(comma)
                 pw.print(m.getID() + "|" + m.getName() + "|" + m.getEmail() + "|" + m.getPassword() + "|");
@@ -59,6 +62,7 @@ public class ManagerDatabase {
                 pw.print("|");
                 pw.println(String.join(",", m.getManagedEmployeeIds()));
             }
+            pw.close();
         } catch (IOException ex) {
             System.out.println("Error: " + ex.getMessage());
         }
@@ -66,9 +70,10 @@ public class ManagerDatabase {
 
     private void loadFromFile() {
         managerList.clear();
+        File dir = new File("./Database");
+        if (!dir.exists()) dir.mkdirs();
         File file = new File(FILE_NAME);
-        if (!file.exists())
-            return;
+        if (!file.exists()) return;
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {

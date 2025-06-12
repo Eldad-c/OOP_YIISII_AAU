@@ -53,12 +53,16 @@ public class TaskDatabase {
     }
 
     private void saveToFile() {
-        try (PrintWriter pw = new PrintWriter(new FileWriter(FILE_NAME))) {
+        try {
+            java.io.File dir = new java.io.File("./Database");
+            if (!dir.exists()) dir.mkdirs();
+            PrintWriter pw = new PrintWriter(new FileWriter(FILE_NAME));
             for (Task t : taskList) {
                 // Format: id|descriptionLink|assignedUserID|status|dueDate|projectID
                 String dueDateStr = t.getDueDate() != null ? sdf.format(t.getDueDate()) : "";
                 pw.println(t.getID() + "|" + t.getDescriptionLink() + "|" + t.getAssignedUserID() + "|" + t.getStatus() + "|" + dueDateStr + "|" + t.getProjectID());
             }
+            pw.close();
         } catch (IOException ex) {
             System.out.println("Error: " + ex.getMessage());
         }
@@ -66,6 +70,8 @@ public class TaskDatabase {
 
     private void loadFromFile() {
         taskList.clear();
+        File dir = new File("./Database");
+        if (!dir.exists()) dir.mkdirs();
         File file = new File(FILE_NAME);
         if (!file.exists()) return;
         try (Scanner scanner = new Scanner(file)) {
