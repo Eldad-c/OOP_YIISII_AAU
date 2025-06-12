@@ -84,12 +84,18 @@ public class EmployeeDatabase {
                     String password = parts[3];
                     String managerID = parts[4];
                     ArrayList<String> assignedTaskIds = new ArrayList<>();
-                    if (!parts[5].isEmpty()) {
-                        for (String tid : parts[5].split(",")) assignedTaskIds.add(tid);
+                    if (parts[5] != null && !parts[5].isEmpty()) {
+                        String[] tids = parts[5].split(",");
+                        for (String tid : tids) {
+                            if (!tid.isEmpty()) assignedTaskIds.add(tid);
+                        }
                     }
                     ArrayList<String> projectIds = new ArrayList<>();
-                    if (!parts[6].isEmpty()) {
-                        for (String pid : parts[6].split(",")) projectIds.add(pid);
+                    if (parts[6] != null && !parts[6].isEmpty()) {
+                        String[] pids = parts[6].split(",");
+                        for (String pid : pids) {
+                            if (!pid.isEmpty()) projectIds.add(pid);
+                        }
                     }
                     Employee e = new Employee(managerID, name, id, email, password);
                     e.setAssignedTaskIds(assignedTaskIds);
