@@ -353,7 +353,28 @@ public class ExecutiveGUI extends JPanel {
         String description = JOptionPane.showInputDialog(this, "Enter description link (optional):");
         String startDate = JOptionPane.showInputDialog(this, "Enter start date (yyyy-MM-dd):");
         String endDate = JOptionPane.showInputDialog(this, "Enter end date (yyyy-MM-dd):");
-        String status = JOptionPane.showInputDialog(this, "Enter status (STARTED, IN_PROGRESS, COMPLETED, etc.):");
+        // --- Status selection via radio buttons ---
+        String[] statusOptions = {"STARTED", "IN_PROGRESS", "COMPLETED", "ON_HOLD", "CANCELLED"};
+        ButtonGroup statusGroup = new ButtonGroup();
+        JPanel statusPanel = new JPanel(new GridLayout(0, 1));
+        JRadioButton[] statusButtons = new JRadioButton[statusOptions.length];
+        for (int i = 0; i < statusOptions.length; i++) {
+            statusButtons[i] = new JRadioButton(statusOptions[i]);
+            statusGroup.add(statusButtons[i]);
+            statusPanel.add(statusButtons[i]);
+        }
+        // Default selection
+        statusButtons[0].setSelected(true);
+        int statusResult = JOptionPane.showConfirmDialog(this, statusPanel, "Select status:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (statusResult != JOptionPane.OK_OPTION) return;
+        String status = null;
+        for (JRadioButton btn : statusButtons) {
+            if (btn.isSelected()) {
+                status = btn.getText();
+                break;
+            }
+        }
+        if (status == null) return;
         // Manager selection (required)
         java.util.List<Models.Manager> managers = managerDb.getAll();
         if (managers.isEmpty()) {
