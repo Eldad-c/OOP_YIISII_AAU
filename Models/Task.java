@@ -10,7 +10,7 @@ public class Task {
     Date dueDate;
     String projectID;
 
-    Task(String ID, String descriptionLink, String assignedUserID, String status, Date dueDate, String projectID) {
+    public Task(String ID, String descriptionLink, String assignedUserID, String status, Date dueDate, String projectID) {
         this.ID = ID;
         this.descriptionLink = descriptionLink;
         this.assignedUserID = assignedUserID;

@@ -13,7 +13,7 @@ public class LoginPageGUI extends JPanel {
     private LoginListener loginListener;
 
     public interface LoginListener {
-        void onLoginSuccess(String username, String role);
+        void onLoginSuccess(String username, String password, String role);
     }
 
     public void setLoginListener(LoginListener listener) {
@@ -24,7 +24,6 @@ public class LoginPageGUI extends JPanel {
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.anchor = GridBagConstraints.WEST;
 
         // Title
         signInLabel = new JLabel("Sign in to PMS");
@@ -35,7 +34,6 @@ public class LoginPageGUI extends JPanel {
         gbc.anchor = GridBagConstraints.CENTER;
         add(signInLabel, gbc);
 
-        gbc.anchor = GridBagConstraints.WEST; // reset for inputs
         gbc.gridwidth = 1;
 
         // Username
@@ -82,20 +80,16 @@ public class LoginPageGUI extends JPanel {
         add(buttonPanel, gbc);
 
         // Action listener
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String username = usernameField.getText();
-                String password = new String(passwordField.getPassword());
-                String role = (String) roleComboBox.getSelectedItem();
+        loginButton.addActionListener(e -> {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+            String role = (String) roleComboBox.getSelectedItem();
 
-                if (username.isEmpty() || password.isEmpty() || role.equals("Select Role")) {
-                    JOptionPane.showMessageDialog(LoginPageGUI.this, "Please fill out all fields.", "Error", JOptionPane.ERROR_MESSAGE);
-                } else {
-                    if (loginListener != null) {
-                        loginListener.onLoginSuccess(username, role);
-                    }
-
+            if (username.isEmpty() || password.isEmpty() || role.equals("Select Role")) {
+                JOptionPane.showMessageDialog(LoginPageGUI.this, "Please fill out all fields.", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                if (loginListener != null) {
+                    loginListener.onLoginSuccess(username, password, role);
                 }
             }
         });
