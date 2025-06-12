@@ -50,7 +50,7 @@ public class ManagerDatabase {
         return new ArrayList<>(managerList);
     }
 
-    private void saveToFile() {
+    public void saveToFile() {
         try {
             java.io.File dir = new java.io.File("./Database");
             if (!dir.exists()) dir.mkdirs();

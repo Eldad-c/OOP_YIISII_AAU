@@ -278,18 +278,21 @@ public class ExecutiveGUI extends JPanel {
         }
         Models.Employee emp = new Models.Employee(managerID == null ? "" : managerID, name, id, email, password);
         employeeDb.add(emp);
+        employeeDb.saveToFile(); // <-- Ensure data is persisted
         // Add to manager's managedEmployeeIds if manager selected
         if (managerID != null && !managerID.isEmpty()) {
             Models.Manager mgr = managerDb.getById(managerID);
             if (mgr != null) {
                 mgr.addManagedEmployeeId(id);
                 managerDb.update(mgr);
+                managerDb.saveToFile(); // <-- Persist manager update
             }
         }
         // Add to executive's organizationEmployeesList
         if (currentExecutive != null && !currentExecutive.getOrganizationEmployeesList().contains(id)) {
             currentExecutive.getOrganizationEmployeesList().add(id);
             executiveDb.update(currentExecutive);
+            executiveDb.saveToFile(); // <-- Persist executive update
         }
         refreshDisplay();
         JOptionPane.showMessageDialog(this, "Employee added.");
@@ -352,10 +355,12 @@ public class ExecutiveGUI extends JPanel {
         if (password.trim().isEmpty()) return;
         Models.Manager mgr = new Models.Manager(name, id, email, password);
         managerDb.add(mgr);
+        managerDb.saveToFile(); // <-- Ensure data is persisted
         // Add to executive's organizationManagersList
         if (currentExecutive != null && !currentExecutive.getOrganizationManagersList().contains(id)) {
             currentExecutive.getOrganizationManagersList().add(id);
             executiveDb.update(currentExecutive);
+            executiveDb.saveToFile(); // <-- Persist executive update
         }
         refreshDisplay();
         JOptionPane.showMessageDialog(this, "Manager added.");

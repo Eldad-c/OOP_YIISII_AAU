@@ -56,7 +56,7 @@ public class ExecutiveDatabase {
         return new ArrayList<>(executiveList);
     }
 
-    private void saveToFile() {
+    public void saveToFile() {
         try {
             java.io.File dir = new java.io.File("./Database");
             if (!dir.exists()) dir.mkdirs();
