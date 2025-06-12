@@ -11,6 +11,12 @@ public class ExecutiveDatabase {
     public ExecutiveDatabase() {
         executiveList = new ArrayList<>();
         loadFromFile();
+        // Ensure default executive exists only if missing
+        if (getById("default") == null) {
+            Executive defaultExec = new Executive("default", "default", "default@email.com", "default");
+            executiveList.add(defaultExec);
+            saveToFile();
+        }
     }
 
     public void add(Executive executive) {

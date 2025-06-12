@@ -121,20 +121,20 @@ public class ExecutiveGUI extends JPanel {
         add(bottomPanel, gbc);
 
         // --- Event Listeners ---
-        addEmployeeBtn.addActionListener(_ -> addOrUpdatePersonDialog("Employee", true));
-        updateEmployeeBtn.addActionListener(_ -> addOrUpdatePersonDialog("Employee", false));
-        removeEmployeeBtn.addActionListener(_ -> removePersonDialog("Employee"));
-        addManagerBtn.addActionListener(_ -> addOrUpdatePersonDialog("Manager", true));
-        updateManagerBtn.addActionListener(_ -> addOrUpdatePersonDialog("Manager", false));
-        removeManagerBtn.addActionListener(_ -> removePersonDialog("Manager"));
-        addProjectBtn.addActionListener(_ -> addOrUpdateProjectDialog(true));
-        updateProjectBtn.addActionListener(_ -> addOrUpdateProjectDialog(false));
-        removeProjectBtn.addActionListener(_ -> removeProjectDialog());
-        addExecutiveBtn.addActionListener(_ -> addOrUpdateExecutiveDialog(true));
-        updateExecutiveBtn.addActionListener(_ -> addOrUpdateExecutiveDialog(false));
-        removeExecutiveBtn.addActionListener(_ -> removeExecutiveDialog());
-        generateReportBtn.addActionListener(_ -> showGenerateReportDialog());
-        backBtn.addActionListener(_ -> { if (backListener != null) backListener.onBack(); });
+        addEmployeeBtn.addActionListener(e -> addEmployeeDialog());
+        updateEmployeeBtn.addActionListener(e -> updateEmployeeDialog());
+        removeEmployeeBtn.addActionListener(e -> removeEmployeeDialog());
+        addManagerBtn.addActionListener(e -> addManagerDialog());
+        updateManagerBtn.addActionListener(e -> updateManagerDialog());
+        removeManagerBtn.addActionListener(e -> removeManagerDialog());
+        addProjectBtn.addActionListener(e -> addOrUpdateProjectDialog(true));
+        updateProjectBtn.addActionListener(e -> addOrUpdateProjectDialog(false));
+        removeProjectBtn.addActionListener(e -> removeProjectDialog());
+        addExecutiveBtn.addActionListener(e -> addOrUpdateExecutiveDialog(true));
+        updateExecutiveBtn.addActionListener(e -> addOrUpdateExecutiveDialog(false));
+        removeExecutiveBtn.addActionListener(e -> removeExecutiveDialog());
+        generateReportBtn.addActionListener(e -> showGenerateReportDialog());
+        backBtn.addActionListener(e -> { if (backListener != null) backListener.onBack(); });
     }
 
     public void setExecutiveAndDatabases(Models.Executive exec, Database.ExecutiveDatabase execDb, Database.ManagerDatabase mgrDb, Database.EmployeeDatabase empDb, Database.ProjectDatabase projDb, Database.TaskDatabase tDb) {
@@ -196,79 +196,175 @@ public class ExecutiveGUI extends JPanel {
         executiveListArea.setText(execSb.toString());
     }
 
-    // --- Add/Update Employee or Manager ---
-    private void addOrUpdatePersonDialog(String type, boolean isAdd) {
-        String id;
-        if (isAdd) {
-            id = JOptionPane.showInputDialog(this, "Enter new " + type + " ID:");
-            if (id == null || id.trim().isEmpty()) return;
-        } else {
-            id = JOptionPane.showInputDialog(this, "Enter " + type + " ID to update:");
-            if (id == null || id.trim().isEmpty()) return;
+    // --- Add Employee ---
+    private void addEmployeeDialog() {
+        String id = JOptionPane.showInputDialog(this, "Enter new Employee ID:");
+        if (id == null || id.trim().isEmpty()) return;
+        if (employeeDb.getById(id) != null) {
+            JOptionPane.showMessageDialog(this, "ID already exists.");
+            return;
         }
-        String newName = JOptionPane.showInputDialog(this, "Enter name:");
-        if (newName == null || newName.trim().isEmpty()) return;
-        String newEmail = JOptionPane.showInputDialog(this, "Enter email:");
-        if (newEmail == null || newEmail.trim().isEmpty()) return;
+        String name = JOptionPane.showInputDialog(this, "Enter name:");
+        if (name == null || name.trim().isEmpty()) return;
+        String email = JOptionPane.showInputDialog(this, "Enter email:");
+        if (email == null || email.trim().isEmpty()) return;
         JPasswordField passwordField = new JPasswordField();
         int pwResult = JOptionPane.showConfirmDialog(this, passwordField, "Enter password:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (pwResult != JOptionPane.OK_OPTION) return;
-        String newPassword = new String(passwordField.getPassword());
-        if (newPassword.trim().isEmpty()) return;
-        if (type.equals("Employee")) {
-            String managerId = JOptionPane.showInputDialog(this, "Enter manager ID for this employee:");
-            if (managerId == null || managerId.trim().isEmpty()) return;
-            if (isAdd) {
-                Models.Employee emp = new Models.Employee(managerId, newName, id, newEmail, newPassword);
-                employeeDb.add(emp);
-            } else {
-                Models.Employee existing = employeeDb.getById(id);
-                if (existing == null) { JOptionPane.showMessageDialog(this, "Employee not found."); return; }
-                existing.setName(newName);
-                existing.setEmail(newEmail);
-                existing.setPassword(newPassword);
-                existing.setManagerID(managerId);
-                employeeDb.update(existing);
-            }
-        } else if (type.equals("Manager")) {
-            if (isAdd) {
-                Models.Manager mgr = new Models.Manager(newName, id, newEmail, newPassword);
-                managerDb.add(mgr);
-            } else {
-                Models.Manager existing = managerDb.getById(id);
-                if (existing == null) { JOptionPane.showMessageDialog(this, "Manager not found."); return; }
-                existing.setName(newName);
-                existing.setEmail(newEmail);
-                existing.setPassword(newPassword);
-                managerDb.update(existing);
-            }
+        String password = new String(passwordField.getPassword());
+        if (password.trim().isEmpty()) return;
+        // Manager selection (optional)
+        java.util.List<Models.Manager> managers = managerDb.getAll();
+        String[] managerOptions = managers.stream().map(m -> m.getID() + " - " + m.getName()).toArray(String[]::new);
+        String managerID = null;
+        if (managerOptions.length > 0) {
+            managerID = (String) JOptionPane.showInputDialog(this, "Select manager (optional):", "Manager Selection", JOptionPane.PLAIN_MESSAGE, null, managerOptions, managerOptions[0]);
+            if (managerID != null && managerID.contains(" - ")) managerID = managerID.split(" - ")[0];
         }
+        Models.Employee emp = new Models.Employee(managerID == null ? "" : managerID, name, id, email, password);
+        employeeDb.add(emp);
         refreshDisplay();
-        JOptionPane.showMessageDialog(this, type + (isAdd ? " added." : " updated."));
+        JOptionPane.showMessageDialog(this, "Employee added.");
     }
 
-    private void removePersonDialog(String type) {
-        String id = JOptionPane.showInputDialog(this, "Enter " + type + " ID to remove:");
+    // --- Update Employee ---
+    private void updateEmployeeDialog() {
+        String id = JOptionPane.showInputDialog(this, "Enter existing Employee ID to update:");
         if (id == null || id.trim().isEmpty()) return;
-        if (type.equals("Employee")) employeeDb.delete(id);
-        else if (type.equals("Manager")) managerDb.delete(id);
+        Models.Employee existing = employeeDb.getById(id);
+        if (existing == null) {
+            JOptionPane.showMessageDialog(this, "ID does not exist.");
+            return;
+        }
+        String name = JOptionPane.showInputDialog(this, "Enter new name:", existing.getName());
+        if (name == null || name.trim().isEmpty()) return;
+        String email = JOptionPane.showInputDialog(this, "Enter new email:", existing.getEmail());
+        if (email == null || email.trim().isEmpty()) return;
+        JPasswordField passwordField = new JPasswordField();
+        int pwResult = JOptionPane.showConfirmDialog(this, passwordField, "Enter new password:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (pwResult != JOptionPane.OK_OPTION) return;
+        String password = new String(passwordField.getPassword());
+        if (password.trim().isEmpty()) return;
+        // Manager selection (optional)
+        java.util.List<Models.Manager> managers = managerDb.getAll();
+        String[] managerOptions = managers.stream().map(m -> m.getID() + " - " + m.getName()).toArray(String[]::new);
+        String managerID = existing.getManagerID();
+        if (managerOptions.length > 0) {
+            String currentManager = managerID == null ? null : managers.stream().filter(m -> m.getID().equals(managerID)).map(m -> m.getID() + " - " + m.getName()).findFirst().orElse(managerOptions[0]);
+            String selected = (String) JOptionPane.showInputDialog(this, "Select manager (optional):", "Manager Selection", JOptionPane.PLAIN_MESSAGE, null, managerOptions, currentManager);
+            if (selected != null && selected.contains(" - ")) managerID = selected.split(" - ")[0];
+        }
+        existing.setName(name);
+        existing.setEmail(email);
+        existing.setPassword(password);
+        existing.setManagerID(managerID == null ? "" : managerID);
+        employeeDb.update(existing);
         refreshDisplay();
-        JOptionPane.showMessageDialog(this, type + " removed.");
+        JOptionPane.showMessageDialog(this, "Employee updated.");
+    }
+
+    // --- Add Manager ---
+    private void addManagerDialog() {
+        String id = JOptionPane.showInputDialog(this, "Enter new Manager ID:");
+        if (id == null || id.trim().isEmpty()) return;
+        if (managerDb.getById(id) != null) {
+            JOptionPane.showMessageDialog(this, "ID already exists.");
+            return;
+        }
+        String name = JOptionPane.showInputDialog(this, "Enter name:");
+        if (name == null || name.trim().isEmpty()) return;
+        String email = JOptionPane.showInputDialog(this, "Enter email:");
+        if (email == null || email.trim().isEmpty()) return;
+        JPasswordField passwordField = new JPasswordField();
+        int pwResult = JOptionPane.showConfirmDialog(this, passwordField, "Enter password:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (pwResult != JOptionPane.OK_OPTION) return;
+        String password = new String(passwordField.getPassword());
+        if (password.trim().isEmpty()) return;
+        Models.Manager mgr = new Models.Manager(name, id, email, password);
+        managerDb.add(mgr);
+        refreshDisplay();
+        JOptionPane.showMessageDialog(this, "Manager added.");
+    }
+
+    // --- Update Manager ---
+    private void updateManagerDialog() {
+        String id = JOptionPane.showInputDialog(this, "Enter existing Manager ID to update:");
+        if (id == null || id.trim().isEmpty()) return;
+        Models.Manager existing = managerDb.getById(id);
+        if (existing == null) {
+            JOptionPane.showMessageDialog(this, "ID does not exist.");
+            return;
+        }
+        String name = JOptionPane.showInputDialog(this, "Enter new name:", existing.getName());
+        if (name == null || name.trim().isEmpty()) return;
+        String email = JOptionPane.showInputDialog(this, "Enter new email:", existing.getEmail());
+        if (email == null || email.trim().isEmpty()) return;
+        JPasswordField passwordField = new JPasswordField();
+        int pwResult = JOptionPane.showConfirmDialog(this, passwordField, "Enter new password:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (pwResult != JOptionPane.OK_OPTION) return;
+        String password = new String(passwordField.getPassword());
+        if (password.trim().isEmpty()) return;
+        existing.setName(name);
+        existing.setEmail(email);
+        existing.setPassword(password);
+        managerDb.update(existing);
+        refreshDisplay();
+        JOptionPane.showMessageDialog(this, "Manager updated.");
+    }
+
+    // --- Remove Employee ---
+    private void removeEmployeeDialog() {
+        String id = JOptionPane.showInputDialog(this, "Enter Employee ID to remove:");
+        if (id == null || id.trim().isEmpty()) return;
+        employeeDb.delete(id);
+        refreshDisplay();
+        JOptionPane.showMessageDialog(this, "Employee removed.");
+    }
+
+    // --- Remove Manager ---
+    private void removeManagerDialog() {
+        String id = JOptionPane.showInputDialog(this, "Enter Manager ID to remove:");
+        if (id == null || id.trim().isEmpty()) return;
+        managerDb.delete(id);
+        refreshDisplay();
+        JOptionPane.showMessageDialog(this, "Manager removed.");
     }
 
     // --- Add/Update Project ---
     private void addOrUpdateProjectDialog(boolean isAdd) {
-        String id = JOptionPane.showInputDialog(this, (isAdd ? "Enter new " : "Enter ") + "Project ID:");
-        if (id == null || id.trim().isEmpty()) return;
+        String id;
+        if (isAdd) {
+            id = JOptionPane.showInputDialog(this, "Enter new Project ID:");
+            if (id == null || id.trim().isEmpty()) return;
+            if (projectDb.getById(id) != null) {
+                JOptionPane.showMessageDialog(this, "ID already exists.");
+                return;
+            }
+        } else {
+            id = JOptionPane.showInputDialog(this, "Enter existing Project ID to update:");
+            if (id == null || id.trim().isEmpty()) return;
+            if (projectDb.getById(id) == null) {
+                JOptionPane.showMessageDialog(this, "ID does not exist.");
+                return;
+            }
+        }
         String name = JOptionPane.showInputDialog(this, "Enter project name:");
         if (name == null || name.trim().isEmpty()) return;
         String description = JOptionPane.showInputDialog(this, "Enter description link (optional):");
         String startDate = JOptionPane.showInputDialog(this, "Enter start date (yyyy-MM-dd):");
         String endDate = JOptionPane.showInputDialog(this, "Enter end date (yyyy-MM-dd):");
         String status = JOptionPane.showInputDialog(this, "Enter status (STARTED, IN_PROGRESS, COMPLETED, etc.):");
-        String managerId = JOptionPane.showInputDialog(this, "Enter manager ID for this project:");
-        if (managerId == null || managerId.trim().isEmpty()) return;
-        Models.Project proj = new Models.Project(id, name, description, startDate, endDate, status, managerId);
+        // Manager selection (required)
+        java.util.List<Models.Manager> managers = managerDb.getAll();
+        if (managers.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No managers available. Please add a manager first.");
+            return;
+        }
+        String[] managerOptions = managers.stream().map(m -> m.getID() + " - " + m.getName()).toArray(String[]::new);
+        String managerID = (String) JOptionPane.showInputDialog(this, "Select manager:", "Manager Selection", JOptionPane.PLAIN_MESSAGE, null, managerOptions, managerOptions[0]);
+        if (managerID == null) return;
+        if (managerID.contains(" - ")) managerID = managerID.split(" - ")[0];
+        Models.Project proj = new Models.Project(id, name, description, startDate, endDate, status, managerID);
         if (isAdd) projectDb.add(proj); else projectDb.update(proj);
         refreshDisplay();
         JOptionPane.showMessageDialog(this, "Project " + (isAdd ? "added." : "updated."));
@@ -277,6 +373,10 @@ public class ExecutiveGUI extends JPanel {
     private void removeProjectDialog() {
         String id = JOptionPane.showInputDialog(this, "Enter Project ID to remove:");
         if (id == null || id.trim().isEmpty()) return;
+        if (projectDb.getById(id) == null) {
+            JOptionPane.showMessageDialog(this, "ID does not exist.");
+            return;
+        }
         projectDb.delete(id);
         refreshDisplay();
         JOptionPane.showMessageDialog(this, "Project removed.");
@@ -288,28 +388,35 @@ public class ExecutiveGUI extends JPanel {
         if (isAdd) {
             id = JOptionPane.showInputDialog(this, "Enter new Executive ID:");
             if (id == null || id.trim().isEmpty()) return;
+            if (executiveDb.getById(id) != null) {
+                JOptionPane.showMessageDialog(this, "ID already exists.");
+                return;
+            }
         } else {
-            id = JOptionPane.showInputDialog(this, "Enter Executive ID to update:");
+            id = JOptionPane.showInputDialog(this, "Enter existing Executive ID to update:");
             if (id == null || id.trim().isEmpty()) return;
+            if (executiveDb.getById(id) == null) {
+                JOptionPane.showMessageDialog(this, "ID does not exist.");
+                return;
+            }
         }
-        String newName = JOptionPane.showInputDialog(this, "Enter name:");
-        if (newName == null || newName.trim().isEmpty()) return;
-        String newEmail = JOptionPane.showInputDialog(this, "Enter email:");
-        if (newEmail == null || newEmail.trim().isEmpty()) return;
+        String name = JOptionPane.showInputDialog(this, "Enter name:");
+        if (name == null || name.trim().isEmpty()) return;
+        String email = JOptionPane.showInputDialog(this, "Enter email:");
+        if (email == null || email.trim().isEmpty()) return;
         JPasswordField passwordField = new JPasswordField();
         int pwResult = JOptionPane.showConfirmDialog(this, passwordField, "Enter password:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (pwResult != JOptionPane.OK_OPTION) return;
-        String newPassword = new String(passwordField.getPassword());
-        if (newPassword.trim().isEmpty()) return;
+        String password = new String(passwordField.getPassword());
+        if (password.trim().isEmpty()) return;
         if (isAdd) {
-            Models.Executive exec = new Models.Executive(newName, id, newEmail, newPassword);
+            Models.Executive exec = new Models.Executive(name, id, email, password);
             executiveDb.add(exec);
         } else {
             Models.Executive existing = executiveDb.getById(id);
-            if (existing == null) { JOptionPane.showMessageDialog(this, "Executive not found."); return; }
-            existing.setName(newName);
-            existing.setEmail(newEmail);
-            existing.setPassword(newPassword);
+            existing.setName(name);
+            existing.setEmail(email);
+            existing.setPassword(password);
             executiveDb.update(existing);
         }
         refreshDisplay();
@@ -319,6 +426,10 @@ public class ExecutiveGUI extends JPanel {
     private void removeExecutiveDialog() {
         String id = JOptionPane.showInputDialog(this, "Enter Executive ID to remove:");
         if (id == null || id.trim().isEmpty()) return;
+        if (executiveDb.getById(id) == null) {
+            JOptionPane.showMessageDialog(this, "ID does not exist.");
+            return;
+        }
         executiveDb.delete(id);
         refreshDisplay();
         JOptionPane.showMessageDialog(this, "Executive removed.");
